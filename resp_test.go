@@ -72,7 +72,7 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 }
 
 func getTestFiles(tb testing.TB) []string {
-	files, err := filepath.Glob(filepath.Join("testdata", "*.resp"))
+	files, err := filepath.Glob(filepath.Join("testdata", tb.Name(), "*.resp"))
 	if err != nil {
 		tb.Fatalf("failed to glob testdata directory: %s", err)
 	}
