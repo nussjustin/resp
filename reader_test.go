@@ -731,3 +731,37 @@ func BenchmarkReaderReadSimpleString(b *testing.B) {
 		})
 	}
 }
+
+func TestReaderReadMixed(t *testing.T) {
+	const data = "+OK\r\n-ERR something went wrong\r\n$5\r\nhello\r\n*3\r\n$5\r\nworld\r\n:5\r\n*-1\r\n"
+
+	r := resp.NewReader(strings.NewReader(data))
+
+	if _, s, err := r.ReadSimpleString(nil); err != nil || string(s) != "OK" {
+		t.Fatalf("failed to read simple string: %s", err)
+	}
+
+	if _, s, err := r.ReadError(nil); err != nil || string(s) != "ERR something went wrong" {
+		t.Fatalf("failed to read error: %s", err)
+	}
+
+	if _, s, err := r.ReadBulkString(nil); err != nil || string(s) != "hello" {
+		t.Fatalf("failed to read bulk string: %s", err)
+	}
+
+	if n, err := r.ReadArrayHeader(); err != nil || n != 3 {
+		t.Fatalf("failed to read array header: %s", err)
+	}
+
+	if _, s, err := r.ReadBulkString(nil); err != nil || string(s) != "world" {
+		t.Fatalf("failed to read bulk string: %s", err)
+	}
+
+	if n, err := r.ReadInteger(); err != nil || n != 5 {
+		t.Fatalf("failed to read integer: %s", err)
+	}
+
+	if n, err := r.ReadArrayHeader(); err != nil || n != -1 {
+		t.Fatalf("failed to read array header: %s", err)
+	}
+}

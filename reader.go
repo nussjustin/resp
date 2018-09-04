@@ -125,7 +125,9 @@ func (rr *Reader) readLine(dst []byte) (int, []byte, error) {
 	if len(line) < 2 || line[len(line)-2] != '\r' {
 		return 0, nil, ErrUnexpectedEOL
 	}
-	dst = append(dst, line[:len(line)-2]...)
+	if dst = append(dst, line[:len(line)-2]...); dst == nil {
+		dst = []byte{} // make sure we don't return nil, so we can better distinguish this from a NULL response
+	}
 	return len(line) - 2, dst, nil
 }
 
@@ -140,7 +142,12 @@ func (rr *Reader) readLineN(dst []byte, n int) (int, []byte, error) {
 	if len(line) != n+2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
 		return 0, nil, ErrUnexpectedEOL
 	}
-	dst = append(dst, line[:len(line)-2]...)
+	if dst = append(dst, line[:len(line)-2]...); dst == nil {
+		dst = []byte{} // make sure we don't return nil, so we can better distinguish this from a NULL response
+	}
+	if _, err := rr.br.Discard(len(line)); err != nil {
+		return 0, nil, err
+	}
 	return len(line) - 2, dst, nil
 }
 
