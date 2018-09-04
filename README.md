@@ -4,6 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/nussjustin/resp?status.svg)](https://godoc.org/github.com/nussjustin/resp)
 [![Build Status](https://travis-ci.org/nussjustin/resp.svg?branch=master)](https://travis-ci.org/nussjustin/resp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nussjustin/resp)](https://goreportcard.com/report/github.com/nussjustin/resp)
+[![codecov](https://codecov.io/gh/nussjustin/resp/branch/master/graph/badge.svg)](https://codecov.io/gh/nussjustin/resp)
 
 Provides fast reader and writer types for the Redis RESP protocol.
 
