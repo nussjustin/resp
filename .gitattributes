@@ -1,1 +1,1 @@
-*.resp text eol=crlf
+*.resp binary
