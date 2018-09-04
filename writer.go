@@ -114,7 +114,7 @@ func (rw *Writer) WriteInteger(i int) (int, error) {
 	return rw.writeNumber(':', int64(i))
 }
 
-// WriteError writes the given byte slice unvalidated as a simple string.
+// WriteSimpleString writes the given byte slice unvalidated as a simple string.
 func (rw *Writer) WriteSimpleString(s []byte) (int, error) {
 	return rw.writeBytes('+', s)
 }
