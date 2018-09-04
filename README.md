@@ -10,8 +10,6 @@ Provides fast reader and writer types for the Redis RESP protocol.
 
 ## Installation
 
-Using `$GOPATH`:
-
 ```sh
 go get -u github.com/nussjustin/resp
 ```
