@@ -56,18 +56,18 @@ func (t Type) String() string {
 	return string(t)
 }
 
-// ReaderWriter embeds a Reader and a Writer in a single allocation for an io.ReadWriter.
+// ReadWriter embeds a Reader and a Writer in a single allocation for an io.ReadWriter.
 //
 // A single Reader and a single Writer method can be called concurrently, given the Read and Write methods of the
 // underlying io.ReadWriter are safe for concurrent use.
-type ReaderWriter struct {
+type ReadWriter struct {
 	Reader
 	Writer
 }
 
-// NewReaderWriter returns a new ReaderWriter that uses the given io.ReadWriter.
-func NewReaderWriter(rw io.ReadWriter) *ReaderWriter {
-	var rrw ReaderWriter
+// NewReadWriter returns a new ReadWriter that uses the given io.ReadWriter.
+func NewReadWriter(rw io.ReadWriter) *ReadWriter {
+	var rrw ReadWriter
 	rrw.Reset(rw)
 	return &rrw
 }
@@ -75,7 +75,7 @@ func NewReaderWriter(rw io.ReadWriter) *ReaderWriter {
 // Reset resets the embedded Reader and Writer to use the given io.ReadWriter.
 //
 // Reset must not be called concurrently with any other method
-func (rrw *ReaderWriter) Reset(rw io.ReadWriter) {
+func (rrw *ReadWriter) Reset(rw io.ReadWriter) {
 	rrw.Reader.Reset(rw)
 	rrw.Writer.Reset(rw)
 }
