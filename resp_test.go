@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func copyReaderToWriter(tb testing.TB, rw *resp.ReaderWriter) {
+func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 	for {
 		ty, err := rw.Peek()
 		if err == io.EOF {
@@ -81,12 +81,12 @@ func getTestFiles(tb testing.TB) []string {
 	return files
 }
 
-type simpleReaderWriter struct {
+type simpleReadWriter struct {
 	io.Reader
 	io.Writer
 }
 
-func testReaderWriterUsingFile(t *testing.T, fileName string) {
+func testReadWriterUsingFile(t *testing.T, fileName string) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		t.Fatalf("failed to read file %s: %s", fileName, err)
@@ -96,7 +96,7 @@ func testReaderWriterUsingFile(t *testing.T, fileName string) {
 	var out bytes.Buffer
 	inHash, outHash := sha1.New(), sha1.New()
 
-	rw := resp.NewReaderWriter(&simpleReaderWriter{
+	rw := resp.NewReadWriter(&simpleReadWriter{
 		Reader: io.TeeReader(file, inHash),
 		Writer: io.MultiWriter(&out, outHash),
 	})
@@ -109,7 +109,7 @@ func testReaderWriterUsingFile(t *testing.T, fileName string) {
 	}
 }
 
-func TestReaderWriter(t *testing.T) {
+func TestReadWriter(t *testing.T) {
 	for _, file := range getTestFiles(t) {
 		file := file
 
@@ -117,24 +117,24 @@ func TestReaderWriter(t *testing.T) {
 		testName = testName[:len(testName) - len(filepath.Ext(testName))]
 
 		t.Run(testName, func(t *testing.T) {
-			testReaderWriterUsingFile(t, file)
+			testReadWriterUsingFile(t, file)
 		})
 	}
 }
 
-func benchmarkReaderWriterUsingFile(b *testing.B, fileName string) {
+func benchmarkReadWriterUsingFile(b *testing.B, fileName string) {
 	fileBytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		b.Fatalf("failed to read file %s: %s", fileName, err)
 	}
 
 	fileBytesReader := bytes.NewReader(nil)
-	srw := &simpleReaderWriter{
+	srw := &simpleReadWriter{
 		Reader: fileBytesReader,
 		Writer: ioutil.Discard,
 	}
 
-	rw := resp.NewReaderWriter(nil)
+	rw := resp.NewReadWriter(nil)
 
 	b.ResetTimer()
 
@@ -146,7 +146,7 @@ func benchmarkReaderWriterUsingFile(b *testing.B, fileName string) {
 	}
 }
 
-func BenchmarkReaderWriter(b *testing.B) {
+func BenchmarkReadWriter(b *testing.B) {
 	for _, file := range getTestFiles(b) {
 		file := file
 
@@ -154,7 +154,7 @@ func BenchmarkReaderWriter(b *testing.B) {
 		testName = testName[:len(testName) - len(filepath.Ext(testName))]
 
 		b.Run(testName, func(b *testing.B) {
-			benchmarkReaderWriterUsingFile(b, file)
+			benchmarkReadWriterUsingFile(b, file)
 		})
 	}
 }
