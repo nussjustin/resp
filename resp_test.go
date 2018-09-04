@@ -3,6 +3,7 @@ package resp_test
 import (
 	"bytes"
 	"crypto/sha1"
+	"fmt"
 	"github.com/nussjustin/resp"
 	"io"
 	"io/ioutil"
@@ -84,6 +85,14 @@ func getTestFiles(tb testing.TB) []string {
 type simpleReadWriter struct {
 	io.Reader
 	io.Writer
+}
+
+func TestTypeString(t *testing.T) {
+	for ty := resp.Type(0); ty < ^resp.Type(0); ty++ {
+		if ts := ty.String(); ts != fmt.Sprint(ty) {
+			t.Fatalf("got %v, expected %v", ts, fmt.Sprint(ty))
+		}
+	}
 }
 
 func testReadWriterUsingFile(t *testing.T, fileName string) {
