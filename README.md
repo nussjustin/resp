@@ -25,7 +25,7 @@ go get -u github.com/nussjustin/resp
 
 Justin Nuß – [@nussjustin](https://twitter.com/nussjustin)
 
-Distributed under the XYZ license. See ``LICENSE`` for more information.
+Distributed under the MIT license. See ``LICENSE`` for more information.
 
 [https://github.com/nussjustin/resp](https://github.com/nussjustin/)
 
