@@ -126,7 +126,7 @@ func TestWriterWrite(t *testing.T) {
 			mustWrite(t, w, test.Data)
 
 			if got := buf.Bytes(); !bytes.Equal(got, test.Data) {
-				t.Errorf("comparsion failed. got %q, expected %q", got, test.Data)
+				t.Errorf("comparison failed. got %q, expected %q", got, test.Data)
 			}
 		})
 	}

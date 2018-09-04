@@ -14,7 +14,7 @@ type Reader struct {
 	ownbr *bufio.Reader
 }
 
-// NewWriter returns a *Reader that uses the given io.Reader for reads.
+// NewReader returns a *Reader that uses the given io.Reader for reads.
 //
 // See Reset for more information on buffering on the given io.Reader works.
 func NewReader(r io.Reader) *Reader {
@@ -151,7 +151,7 @@ func (rr *Reader) Read(dst []byte) (n int, err error) {
 	return rr.br.Read(dst)
 }
 
-// Read reads an array header, returning the array length.
+// ReadArrayHeader reads an array header, returning the array length.
 //
 // If the next type in the response is not an array, ErrUnexpectedType is returned.
 func (rr *Reader) ReadArrayHeader() (int, error) {
@@ -165,7 +165,7 @@ func (rr *Reader) ReadArrayHeader() (int, error) {
 	return n, err
 }
 
-// Read reads a bulk string header, returning the bulk string length, without reading the bulk string itself.
+// ReadBulkStringHeader reads a bulk string header, returning the bulk string length, without reading the bulk string itself.
 //
 // If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
 func (rr *Reader) ReadBulkStringHeader() (int, error) {
@@ -179,7 +179,7 @@ func (rr *Reader) ReadBulkStringHeader() (int, error) {
 	return n, err
 }
 
-// Read reads a bulk string into the byte slice dst, returning the bulk string length and the resulting byte slice.
+// ReadBulkString reads a bulk string into the byte slice dst, returning the bulk string length and the resulting byte slice.
 //
 // If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
 func (rr *Reader) ReadBulkString(dst []byte) (int, []byte, error) {
@@ -193,7 +193,7 @@ func (rr *Reader) ReadBulkString(dst []byte) (int, []byte, error) {
 	return rr.readLineN(dst, n)
 }
 
-// Read reads an error into the byte slice dst, returning the length and the resulting byte slice.
+// ReadError reads an error into the byte slice dst, returning the length and the resulting byte slice.
 //
 // If the next type in the response is not an error, ErrUnexpectedType is returned.
 func (rr *Reader) ReadError(dst []byte) (int, []byte, error) {
@@ -203,7 +203,7 @@ func (rr *Reader) ReadError(dst []byte) (int, []byte, error) {
 	return rr.readLine(dst)
 }
 
-// Read reads a single RESP integer.
+// ReadInteger reads a single RESP integer.
 //
 // If the next type in the response is not an integer, ErrUnexpectedType is returned.
 func (rr *Reader) ReadInteger() (int, error) {
@@ -213,7 +213,7 @@ func (rr *Reader) ReadInteger() (int, error) {
 	return rr.readNumberLine()
 }
 
-// Read reads a simple string into the byte slice dst, returning the length and the resulting byte slice.
+// ReadSimpleString reads a simple string into the byte slice dst, returning the length and the resulting byte slice.
 //
 // If the next type in the response is not a simple string, ErrUnexpectedType is returned.
 func (rr *Reader) ReadSimpleString(dst []byte) (int, []byte, error) {
