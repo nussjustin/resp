@@ -98,17 +98,14 @@ func (rw *Writer) WriteBulkStringHeader(n int) (int, error) {
 //
 // If you need to write a nil bulk string, use WriteBulkStringBytes instead.
 func (rw *Writer) WriteBulkString(s string) (int, error) {
-	n, err := rw.WriteBulkStringHeader(len(s))
-	if err != nil {
-		return n, err
-	}
-
 	rw.buf = rw.buf[:0]
+	rw.buf = append(rw.buf, '$')
+	rw.buf = strconv.AppendUint(rw.buf, uint64(len(s)), 10)
+	rw.buf = append(rw.buf, '\r', '\n')
 	rw.buf = append(rw.buf, s...)
 	rw.buf = append(rw.buf, '\r', '\n')
 
-	n1, err := rw.w.Write(rw.buf)
-	return n + n1, err
+	return rw.w.Write(rw.buf)
 }
 
 // WriteBulkStringBytes writes the byte slice s as bulk string.
@@ -117,17 +114,14 @@ func (rw *Writer) WriteBulkStringBytes(s []byte) (int, error) {
 		return rw.WriteBulkStringHeader(-1)
 	}
 
-	n, err := rw.WriteBulkStringHeader(len(s))
-	if err != nil {
-		return n, err
-	}
-
 	rw.buf = rw.buf[:0]
+	rw.buf = append(rw.buf, '$')
+	rw.buf = strconv.AppendUint(rw.buf, uint64(len(s)), 10)
+	rw.buf = append(rw.buf, '\r', '\n')
 	rw.buf = append(rw.buf, s...)
 	rw.buf = append(rw.buf, '\r', '\n')
 
-	n1, err := rw.w.Write(rw.buf)
-	return n + n1, err
+	return rw.w.Write(rw.buf)
 }
 
 // WriteError writes the string s unvalidated as a simple error.
