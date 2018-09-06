@@ -1,12 +1,13 @@
 # resp
-> Fast Redis protocol parser package for Go.
+> Fast Redis protocol reader and writer for Go.
 
 [![GoDoc](https://godoc.org/github.com/nussjustin/resp?status.svg)](https://godoc.org/github.com/nussjustin/resp)
 [![Build Status](https://travis-ci.org/nussjustin/resp.svg?branch=master)](https://travis-ci.org/nussjustin/resp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nussjustin/resp)](https://goreportcard.com/report/github.com/nussjustin/resp)
 [![codecov](https://codecov.io/gh/nussjustin/resp/branch/master/graph/badge.svg)](https://codecov.io/gh/nussjustin/resp)
 
-Provides fast reader and writer types for the Redis RESP protocol.
+This is a small package that provides fast reader and writer types for the
+[REdis Serialization Protocol](https://redis.io/topics/protocol) (short RESP).
 
 ## Installation
 
@@ -39,12 +40,12 @@ REDIS_HOST=/tmp/redis.sock  go test -tags integration # unix socket
 ```
 
 Note: If you want to test using a unix socket, make sure that the path to the socket starts with a slash,
-We.g. `/tmp/redis.sock`.
+for example `/tmp/redis.sock`.
 
 ## Release History
 
-* 0.0.0
-    * Work in progress
+* 0.1.0
+    * Initial release
 
 ## Meta
 
