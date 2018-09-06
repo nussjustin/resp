@@ -13,6 +13,57 @@ import (
 	"github.com/nussjustin/resp"
 )
 
+var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
+	resp.TypeArray: func(tb testing.TB, rw *resp.ReadWriter) {
+		n, err := rw.ReadArrayHeader()
+		if err != nil {
+			tb.Fatalf("failed to read array header: %s", err)
+		}
+		if _, err := rw.WriteArrayHeader(n); err != nil {
+			tb.Fatalf("failed to write array header for array of size %d: %s", n, err)
+		}
+	},
+	resp.TypeBulkString: func(tb testing.TB, rw *resp.ReadWriter) {
+		s, err := rw.ReadBulkString(nil)
+		if err != nil {
+			tb.Fatalf("failed to bulk string: %s", err)
+		}
+		if _, err := rw.WriteBulkStringBytes(s); err != nil {
+			tb.Fatalf("failed to write bulk string %q: %s", s, err)
+		}
+	},
+	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter) {
+		s, err := rw.ReadError(nil)
+		if err != nil {
+			tb.Fatalf("failed to read error: %s", err)
+		}
+		if _, err := rw.WriteErrorBytes(s); err != nil {
+			tb.Fatalf("failed to write error %q: %s", s, err)
+		}
+	},
+	resp.TypeInteger: func(tb testing.TB, rw *resp.ReadWriter) {
+		n, err := rw.ReadInteger()
+		if err != nil {
+			tb.Fatalf("failed to read integer: %s", err)
+		}
+		if _, err := rw.WriteInteger(n); err != nil {
+			tb.Fatalf("failed to write integer size %d: %s", n, err)
+		}
+	},
+	resp.TypeSimpleString: func(tb testing.TB, rw *resp.ReadWriter) {
+		s, err := rw.ReadSimpleString(nil)
+		if err != nil {
+			tb.Fatalf("failed to read simple string: %s", err)
+		}
+		if _, err := rw.WriteSimpleStringBytes(s); err != nil {
+			tb.Fatalf("failed to write simple string %q: %s", s, err)
+		}
+	},
+	resp.TypeInvalid: func(tb testing.TB, rw *resp.ReadWriter) {
+		tb.Fatal("found invalid type")
+	},
+}
+
 func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 	for {
 		ty, err := rw.Peek()
@@ -23,52 +74,11 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 			tb.Fatalf("failed to peek at next type: %s", err)
 		}
 
-		switch ty {
-		case resp.TypeArray:
-			n, err := rw.ReadArrayHeader()
-			if err != nil {
-				tb.Fatalf("failed to read array header: %s", err)
-			}
-			if _, err := rw.WriteArrayHeader(n); err != nil {
-				tb.Fatalf("failed to write array header for array of size %d: %s", n, err)
-			}
-		case resp.TypeBulkString:
-			s, err := rw.ReadBulkString(nil)
-			if err != nil {
-				tb.Fatalf("failed to bulk string: %s", err)
-			}
-			if _, err := rw.WriteBulkStringBytes(s); err != nil {
-				tb.Fatalf("failed to write bulk string %q: %s", s, err)
-			}
-		case resp.TypeError:
-			s, err := rw.ReadError(nil)
-			if err != nil {
-				tb.Fatalf("failed to read error: %s", err)
-			}
-			if _, err := rw.WriteErrorBytes(s); err != nil {
-				tb.Fatalf("failed to write error %q: %s", s, err)
-			}
-		case resp.TypeInteger:
-			n, err := rw.ReadInteger()
-			if err != nil {
-				tb.Fatalf("failed to read integer: %s", err)
-			}
-			if _, err := rw.WriteInteger(n); err != nil {
-				tb.Fatalf("failed to write integer size %d: %s", n, err)
-			}
-		case resp.TypeSimpleString:
-			s, err := rw.ReadSimpleString(nil)
-			if err != nil {
-				tb.Fatalf("failed to read simple string: %s", err)
-			}
-			if _, err := rw.WriteSimpleStringBytes(s); err != nil {
-				tb.Fatalf("failed to write simple string %q: %s", s, err)
-			}
-		case resp.TypeInvalid:
-			tb.Fatal("found invalid type")
-		default:
+		fn := copyFuncs[ty]
+		if fn == nil {
 			tb.Fatalf("found unknown type: %#v", ty)
 		}
+		fn(tb, rw)
 	}
 }
 
