@@ -2,6 +2,8 @@ sudo: false
 language: go
 go:
   - 1.11.x
+services:
+- redis-server
 cache:
   directories:
   - $HOME/.cache/go-build
@@ -12,7 +14,7 @@ install:
   - export PATH="$PATH:$GOBIN"
   - go env
 script:
-  - go test       ./...
-  - go test -race ./... -coverprofile=coverage.txt -covermode=atomic
+  - go test -tags integration      ./...
+  - go test -tags integration -race ./... -coverprofile=coverage.txt -covermode=atomic
 after_success:
   - bash <(curl -s https://codecov.io/bash)
