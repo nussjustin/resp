@@ -85,30 +85,68 @@ type simpleWriteCase struct {
 	In       []byte
 }
 
-func testSimpleWrite(tb testing.TB, input string, expected []byte, fn func(*resp.Writer, string) (int, error)) {
-	tb.Helper()
-
-	var buf bytes.Buffer
-	w := resp.NewWriter(&buf)
-
-	if _, err := fn(w, input); err != nil {
-		tb.Errorf("write failed: %s", err)
-	} else if got := buf.Bytes(); !bytes.Equal(got, expected) {
-		tb.Errorf("got %q, expected %q", got, expected)
+func prefixedSimpleWriteCases(prefix string) []simpleWriteCase {
+	return []simpleWriteCase{
+		{
+			Name:     "empty",
+			Expected: prefix + "\r\n",
+			In:       []byte{},
+		},
+		{
+			Name:     "nil",
+			Expected: prefix + "\r\n",
+			In:       nil,
+		},
+		{
+			Name:     "small",
+			Expected: prefix + "YO hello world\r\n",
+			In:       []byte("YO hello world"),
+		},
+		{
+			Name:     "invalid",
+			Expected: prefix + "YO hello\r\nworld\r\n",
+			In:       []byte("YO hello\r\nworld"),
+		},
 	}
 }
 
-func testSimpleWriteBytes(tb testing.TB, input, expected []byte, fn func(*resp.Writer, []byte) (int, error)) {
-	tb.Helper()
+func (s simpleWriteCase) run(t *testing.T,
+	stringsFunc func(*resp.Writer, string) (int, error),
+	bytesFunc func(*resp.Writer, []byte) (int, error)) {
 
-	var buf bytes.Buffer
-	w := resp.NewWriter(&buf)
+	t.Run(s.Name, func(t *testing.T) {
+		s.runBytes(t, bytesFunc)
 
-	if _, err := fn(w, input); err != nil {
-		tb.Errorf("write failed: %s", err)
-	} else if got := buf.Bytes(); !bytes.Equal(got, expected) {
-		tb.Errorf("got %q, expected %q", got, expected)
-	}
+		if s.In != nil {
+			s.runString(t, stringsFunc)
+		}
+	})
+}
+
+func (s simpleWriteCase) runBytes(t *testing.T, fn func(*resp.Writer, []byte) (int, error)) {
+	t.Run("Bytes", func(t *testing.T) {
+		var buf bytes.Buffer
+		w := resp.NewWriter(&buf)
+
+		if _, err := fn(w, s.In); err != nil {
+			t.Errorf("write failed: %s", err)
+		} else if got := buf.String(); got != s.Expected {
+			t.Errorf("got %q, expected %q", got, s.Expected)
+		}
+	})
+}
+
+func (s simpleWriteCase) runString(t *testing.T, fn func(*resp.Writer, string) (int, error)) {
+	t.Run("String", func(t *testing.T) {
+		var buf bytes.Buffer
+		w := resp.NewWriter(&buf)
+
+		if _, err := fn(w, string(s.In)); err != nil {
+			t.Errorf("write failed: %s", err)
+		} else if got := buf.String(); got != s.Expected {
+			t.Errorf("got %q, expected %q", got, s.Expected)
+		}
+	})
 }
 
 func TestWriterWrite(t *testing.T) {
@@ -250,15 +288,9 @@ func TestWriterWriteBulkString(t *testing.T) {
 			In:       []byte("hello\nworld!"),
 		},
 	} {
-		test := test
-
-		t.Run(test.Name, func(t *testing.T) {
-			if test.In != nil {
-				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteBulkString)
-			}
-
-			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteBulkStringBytes)
-		})
+		test.run(t,
+			(*resp.Writer).WriteBulkString,
+			(*resp.Writer).WriteBulkStringBytes)
 	}
 }
 
@@ -334,37 +366,10 @@ func BenchmarkWriterWriteBulkStringHeader(b *testing.B) {
 }
 
 func TestWriterWriteError(t *testing.T) {
-	for _, test := range []simpleWriteCase{
-		{
-			Name:     "empty",
-			Expected: "-\r\n",
-			In:       []byte{},
-		},
-		{
-			Name:     "nil",
-			Expected: "-\r\n",
-			In:       nil,
-		},
-		{
-			Name:     "small",
-			Expected: "-ERR hello world\r\n",
-			In:       []byte("ERR hello world"),
-		},
-		{
-			Name:     "invalid",
-			Expected: "-ERR hello\r\nworld\r\n",
-			In:       []byte("ERR hello\r\nworld"),
-		},
-	} {
-		test := test
-
-		t.Run(test.Name, func(t *testing.T) {
-			if test.In != nil {
-				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteError)
-			}
-
-			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteErrorBytes)
-		})
+	for _, test := range prefixedSimpleWriteCases("-") {
+		test.run(t,
+			(*resp.Writer).WriteError,
+			(*resp.Writer).WriteErrorBytes)
 	}
 }
 
@@ -434,37 +439,10 @@ func BenchmarkWriterWriteInteger(b *testing.B) {
 }
 
 func TestWriterWriteSimpleString(t *testing.T) {
-	for _, test := range []simpleWriteCase{
-		{
-			Name:     "empty",
-			Expected: "+\r\n",
-			In:       []byte{},
-		},
-		{
-			Name:     "nil",
-			Expected: "+\r\n",
-			In:       nil,
-		},
-		{
-			Name:     "small",
-			Expected: "+OK hello world\r\n",
-			In:       []byte("OK hello world"),
-		},
-		{
-			Name:     "invalid",
-			Expected: "+OK hello\r\nworld\r\n",
-			In:       []byte("OK hello\r\nworld"),
-		},
-	} {
-		test := test
-
-		t.Run(test.Name, func(t *testing.T) {
-			if test.In != nil {
-				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteSimpleString)
-			}
-
-			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteSimpleStringBytes)
-		})
+	for _, test := range prefixedSimpleWriteCases("+") {
+		test.run(t,
+			(*resp.Writer).WriteSimpleString,
+			(*resp.Writer).WriteSimpleStringBytes)
 	}
 }
 
