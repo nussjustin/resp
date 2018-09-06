@@ -19,9 +19,8 @@ func assertReadLines(tb testing.TB, br *bufio.Reader, expected ...string) {
 			tb.Fatalf("failed to read line: %s", err)
 		}
 
-
-		if string(got) != expected[i] + "\r\n" {
-			tb.Fatalf("got %q, expected %q", got, expected[i] + "\r\n")
+		if string(got) != expected[i]+"\r\n" {
+			tb.Fatalf("got %q, expected %q", got, expected[i]+"\r\n")
 		}
 	}
 }

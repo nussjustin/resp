@@ -81,7 +81,6 @@ func TestReaderIntegration(t *testing.T) {
 		mustWriteLines(t, conn, "*2", "$3", "GET", "$6", "string")
 		assertReadBulkString(t, r, []byte("value1"))
 
-
 		mustWriteLines(t, conn, "*2", "$8", "SMEMBERS", "$3", "set")
 		assertReadArrayHeader(t, r, 0)
 		mustWriteLines(t, conn, "*3", "$4", "SADD", "$3", "set", "$6", "value3")
