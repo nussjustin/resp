@@ -51,21 +51,6 @@ func mustWriteBulkString(tb testing.TB, w *resp.Writer, s []byte) {
 	mustWriteBytesFunc(tb, "bulk string", w.WriteBulkString, s)
 }
 
-func mustWriteError(tb testing.TB, w *resp.Writer, s []byte) {
-	tb.Helper()
-	mustWriteBytesFunc(tb, "error", w.WriteError, s)
-}
-
-func mustWriteInteger(tb testing.TB, w *resp.Writer, n int) {
-	tb.Helper()
-	mustWriteIntegerFunc(tb, "integer", w.WriteInteger, n)
-}
-
-func mustWriteSimpleString(tb testing.TB, w *resp.Writer, s []byte) {
-	tb.Helper()
-	mustWriteBytesFunc(tb, "simple string", w.WriteSimpleString, s)
-}
-
 func TestWriterIntegration(t *testing.T) {
 	withRedisConn(t, func(conn io.ReadWriteCloser) {
 		br := bufio.NewReader(conn)
