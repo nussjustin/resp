@@ -20,10 +20,10 @@ func mustWriteLines(tb testing.TB, w io.Writer, lines ...string) {
 	}
 }
 
-func assertReadBytesFunc(tb testing.TB, typeName string, f func([]byte) (int, []byte, error), expected []byte) {
+func assertReadBytesFunc(tb testing.TB, typeName string, f func([]byte) ([]byte, error), expected []byte) {
 	tb.Helper()
 
-	if _, got, err := f(nil); err != nil {
+	if got, err := f(nil); err != nil {
 		tb.Fatalf("failed to read %s: %s", typeName, err)
 	} else if !bytes.Equal(got, expected) {
 		tb.Fatalf("got %q, expected %q", got, expected)

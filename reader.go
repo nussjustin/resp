@@ -114,41 +114,41 @@ loop:
 	return n, nil
 }
 
-func (rr *Reader) readLine(dst []byte) (int, []byte, error) {
+func (rr *Reader) readLine(dst []byte) ([]byte, error) {
 	line, err := rr.br.ReadSlice('\n')
 	if err == io.EOF {
-		return 0, nil, ErrUnexpectedEOL
+		return nil, ErrUnexpectedEOL
 	}
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	if len(line) < 2 || line[len(line)-2] != '\r' {
-		return 0, nil, ErrUnexpectedEOL
+		return nil, ErrUnexpectedEOL
 	}
 	if dst = append(dst, line[:len(line)-2]...); dst == nil {
-		dst = []byte{} // make sure we don't return nil, so we can better distinguish this from a NULL response
+		dst = []byte{} // make sure we don't return nil, so we can distinguish this from a NULL response
 	}
-	return len(line) - 2, dst, nil
+	return dst, nil
 }
 
-func (rr *Reader) readLineN(dst []byte, n int) (int, []byte, error) {
+func (rr *Reader) readLineN(dst []byte, n int) ([]byte, error) {
 	line, err := rr.br.Peek(n + 2)
 	if err == io.EOF {
-		return 0, nil, ErrUnexpectedEOL
+		return nil, ErrUnexpectedEOL
 	}
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	if len(line) != n+2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
-		return 0, nil, ErrUnexpectedEOL
+		return nil, ErrUnexpectedEOL
 	}
 	if dst = append(dst, line[:len(line)-2]...); dst == nil {
-		dst = []byte{} // make sure we don't return nil, so we can better distinguish this from a NULL response
+		dst = []byte{} // make sure we don't return nil, so we can distinguish this from a NULL response
 	}
 	if _, err := rr.br.Discard(len(line)); err != nil {
-		return 0, nil, err
+		return nil, err
 	}
-	return len(line) - 2, dst, nil
+	return dst, nil
 }
 
 // Read reads raw data from the underlying io.Reader into dst.
@@ -172,7 +172,7 @@ func (rr *Reader) ReadArrayHeader() (int, error) {
 	return n, err
 }
 
-// ReadBulkStringHeader reads a bulk string header, returning the bulk string length, without reading the bulk string itself.
+// ReadBulkStringHeader reads a bulk string header, returning the length, without reading the bulk string itself.
 //
 // If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
 func (rr *Reader) ReadBulkStringHeader() (int, error) {
@@ -186,26 +186,26 @@ func (rr *Reader) ReadBulkStringHeader() (int, error) {
 	return n, err
 }
 
-// ReadBulkString reads a bulk string into the byte slice dst, returning the bulk string length and the resulting byte slice.
+// ReadBulkString reads a bulk string into the byte slice dst and returns the modified slice.
+//
+// For null bulk strings the returned slice will always be nil.
+// For non-null bulk strings the returned slice will only be nil if there was an error.
 //
 // If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
-func (rr *Reader) ReadBulkString(dst []byte) (int, []byte, error) {
+func (rr *Reader) ReadBulkString(dst []byte) ([]byte, error) {
 	n, err := rr.ReadBulkStringHeader()
-	if err != nil {
-		return 0, nil, err
-	}
-	if n == -1 {
-		return -1, nil, err
+	if n == -1 || err != nil {
+		return nil, err
 	}
 	return rr.readLineN(dst, n)
 }
 
-// ReadError reads an error into the byte slice dst, returning the length and the resulting byte slice.
+// ReadError reads an error into the byte slice dst and returns the modified slice.
 //
 // If the next type in the response is not an error, ErrUnexpectedType is returned.
-func (rr *Reader) ReadError(dst []byte) (int, []byte, error) {
+func (rr *Reader) ReadError(dst []byte) ([]byte, error) {
 	if err := rr.expect(TypeError); err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	return rr.readLine(dst)
 }
@@ -220,12 +220,12 @@ func (rr *Reader) ReadInteger() (int, error) {
 	return rr.readNumberLine()
 }
 
-// ReadSimpleString reads a simple string into the byte slice dst, returning the length and the resulting byte slice.
+// ReadSimpleString reads a simple string into the byte slice dst and returns the modified slice.
 //
 // If the next type in the response is not a simple string, ErrUnexpectedType is returned.
-func (rr *Reader) ReadSimpleString(dst []byte) (int, []byte, error) {
+func (rr *Reader) ReadSimpleString(dst []byte) ([]byte, error) {
 	if err := rr.expect(TypeSimpleString); err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	return rr.readLine(dst)
 }

@@ -33,7 +33,7 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 				tb.Fatalf("failed to write array header for array of size %d: %s", n, err)
 			}
 		case resp.TypeBulkString:
-			_, s, err := rw.ReadBulkString(nil)
+			s, err := rw.ReadBulkString(nil)
 			if err != nil {
 				tb.Fatalf("failed to bulk string: %s", err)
 			}
@@ -41,7 +41,7 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 				tb.Fatalf("failed to write bulk string %q: %s", s, err)
 			}
 		case resp.TypeError:
-			_, s, err := rw.ReadError(nil)
+			s, err := rw.ReadError(nil)
 			if err != nil {
 				tb.Fatalf("failed to read error: %s", err)
 			}
@@ -57,7 +57,7 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 				tb.Fatalf("failed to write integer size %d: %s", n, err)
 			}
 		case resp.TypeSimpleString:
-			_, s, err := rw.ReadSimpleString(nil)
+			s, err := rw.ReadSimpleString(nil)
 			if err != nil {
 				tb.Fatalf("failed to read simple string: %s", err)
 			}

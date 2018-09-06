@@ -106,7 +106,7 @@ func benchmarkSimpleIntegerRead(b *testing.B, in string, fn func(*resp.Reader) (
 	}
 }
 
-func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) (int, []byte, error)) {
+func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) ([]byte, error)) {
 	sr := strings.NewReader(in)
 	r := resp.NewReader(sr)
 
@@ -114,7 +114,7 @@ func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) 
 		sr.Reset(in)
 		r.Reset(sr)
 
-		if _, _, err := fn(r, nil); err != nil {
+		if _, err := fn(r, nil); err != nil {
 			b.Fatalf("read failed: %s", err)
 		}
 	}
@@ -136,13 +136,13 @@ func testSimpleRead(tb testing.TB,
 	input string,
 	expected []byte,
 	err error,
-	fn func(*resp.Reader, []byte) (int, []byte, error)) {
+	fn func(*resp.Reader, []byte) ([]byte, error)) {
 	tb.Helper()
 
 	r := resp.NewReader(strings.NewReader(input))
 
 	var dst []byte
-	gn, got, gerr := fn(r, dst)
+	got, gerr := fn(r, dst)
 
 	if gerr != err {
 		tb.Errorf("got error %v, expected %v", gerr, err)
@@ -154,10 +154,10 @@ func testSimpleRead(tb testing.TB,
 
 	if !bytes.Equal(got, expected) {
 		tb.Errorf("got %q, expected %q", got, expected)
-	} else if expected != nil && gn != len(expected) {
-		tb.Errorf("got length %d, expected %d", gn, len(expected))
-	} else if expected == nil && gn != -1 {
-		tb.Errorf("got length %d, expected %d", gn, -1)
+	} else if expected != nil && got == nil {
+		tb.Errorf("got %#v, expected %#v", got, expected)
+	} else if expected == nil && got != nil {
+		tb.Errorf("got %#v, expected %#v", got, expected)
 	}
 }
 
@@ -737,15 +737,15 @@ func TestReaderReadMixed(t *testing.T) {
 
 	r := resp.NewReader(strings.NewReader(data))
 
-	if _, s, err := r.ReadSimpleString(nil); err != nil || string(s) != "OK" {
+	if s, err := r.ReadSimpleString(nil); err != nil || string(s) != "OK" {
 		t.Fatalf("failed to read simple string: %s", err)
 	}
 
-	if _, s, err := r.ReadError(nil); err != nil || string(s) != "ERR something went wrong" {
+	if s, err := r.ReadError(nil); err != nil || string(s) != "ERR something went wrong" {
 		t.Fatalf("failed to read error: %s", err)
 	}
 
-	if _, s, err := r.ReadBulkString(nil); err != nil || string(s) != "hello" {
+	if s, err := r.ReadBulkString(nil); err != nil || string(s) != "hello" {
 		t.Fatalf("failed to read bulk string: %s", err)
 	}
 
@@ -753,7 +753,7 @@ func TestReaderReadMixed(t *testing.T) {
 		t.Fatalf("failed to read array header: %s", err)
 	}
 
-	if _, s, err := r.ReadBulkString(nil); err != nil || string(s) != "world" {
+	if s, err := r.ReadBulkString(nil); err != nil || string(s) != "world" {
 		t.Fatalf("failed to read bulk string: %s", err)
 	}
 
