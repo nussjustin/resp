@@ -108,10 +108,18 @@ func TestWriterIntegration(t *testing.T) {
 		mustWriteBulkString(t, w, []byte("baz"))
 		assertReadLines(t, br, ":0")
 
+		mustWriteArrayHeader(t, w, 5)
+		mustWriteBulkString(t, w, []byte("SREM"))
+		mustWriteBulkString(t, w, []byte("set1"))
+		mustWriteBulkString(t, w, []byte("foo"))
+		mustWriteBulkString(t, w, []byte("baz"))
+		mustWriteBulkString(t, w, []byte("qux"))
+		assertReadLines(t, br, ":2")
+
 		mustWriteArrayHeader(t, w, 2)
 		mustWriteBulkString(t, w, []byte("SMEMBERS"))
 		mustWriteBulkString(t, w, []byte("set1"))
-		assertReadLines(t, br, "*3", "$3", "foo", "$3", "baz", "$3", "bar")
+		assertReadLines(t, br, "*1", "$3", "bar")
 
 		mustWriteArrayHeader(t, w, 2)
 		mustWriteBulkString(t, w, []byte("ZCARD"))
