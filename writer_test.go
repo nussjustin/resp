@@ -69,7 +69,7 @@ func benchmarkSimpleIntegerWrite(b *testing.B, n int, fn func(*resp.Writer, int)
 	}
 }
 
-func benchmarkSimpleWrite(b *testing.B, s []byte, fn func(*resp.Writer, []byte) (int, error)) {
+func benchmarkSimpleWrite(b *testing.B, s string, fn func(*resp.Writer, string) (int, error)) {
 	w := resp.NewWriter(ioutil.Discard)
 
 	for i := 0; i < b.N; i++ {
@@ -79,7 +79,26 @@ func benchmarkSimpleWrite(b *testing.B, s []byte, fn func(*resp.Writer, []byte) 
 	}
 }
 
-func testSimpleWrite(tb testing.TB, input, expected []byte, fn func(*resp.Writer, []byte) (int, error)) {
+type simpleWriteCase struct {
+	Name     string
+	Expected string
+	In       []byte
+}
+
+func testSimpleWrite(tb testing.TB, input string, expected []byte, fn func(*resp.Writer, string) (int, error)) {
+	tb.Helper()
+
+	var buf bytes.Buffer
+	w := resp.NewWriter(&buf)
+
+	if _, err := fn(w, input); err != nil {
+		tb.Errorf("write failed: %s", err)
+	} else if got := buf.Bytes(); !bytes.Equal(got, expected) {
+		tb.Errorf("got %q, expected %q", got, expected)
+	}
+}
+
+func testSimpleWriteBytes(tb testing.TB, input, expected []byte, fn func(*resp.Writer, []byte) (int, error)) {
 	tb.Helper()
 
 	var buf bytes.Buffer
@@ -194,11 +213,7 @@ func BenchmarkWriterWriteArrayHeader(b *testing.B) {
 }
 
 func TestWriterWriteBulkString(t *testing.T) {
-	for _, test := range []struct {
-		Name     string
-		Expected string
-		In       []byte
-	}{
+	for _, test := range []simpleWriteCase{
 		{
 			Name:     "empty",
 			Expected: "$0\r\n\r\n",
@@ -238,7 +253,11 @@ func TestWriterWriteBulkString(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleWrite(t, test.In, []byte(test.Expected), (*resp.Writer).WriteBulkString)
+			if test.In != nil {
+				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteBulkString)
+			}
+
+			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteBulkStringBytes)
 		})
 	}
 }
@@ -306,7 +325,7 @@ func TestWriterWriteBulkStringHeader(t *testing.T) {
 
 func BenchmarkWriterWriteBulkStringHeader(b *testing.B) {
 	for _, n := range []int{0, 1, 10, 100, 1000, 10000} {
-		s := bytes.Repeat([]byte{'X'}, n)
+		s := strings.Repeat("X", n)
 
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
 			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteBulkString)
@@ -315,11 +334,7 @@ func BenchmarkWriterWriteBulkStringHeader(b *testing.B) {
 }
 
 func TestWriterWriteError(t *testing.T) {
-	for _, test := range []struct {
-		Name     string
-		Expected string
-		In       []byte
-	}{
+	for _, test := range []simpleWriteCase{
 		{
 			Name:     "empty",
 			Expected: "-\r\n",
@@ -344,14 +359,18 @@ func TestWriterWriteError(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleWrite(t, test.In, []byte(test.Expected), (*resp.Writer).WriteError)
+			if test.In != nil {
+				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteError)
+			}
+
+			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteErrorBytes)
 		})
 	}
 }
 
 func BenchmarkWriterWriteError(b *testing.B) {
 	for _, n := range []int{0, 1, 10, 100, 1000, 10000} {
-		s := bytes.Repeat([]byte{'X'}, n)
+		s := strings.Repeat("X", n)
 
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
 			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteError)
@@ -415,11 +434,7 @@ func BenchmarkWriterWriteInteger(b *testing.B) {
 }
 
 func TestWriterWriteSimpleString(t *testing.T) {
-	for _, test := range []struct {
-		Name     string
-		Expected string
-		In       []byte
-	}{
+	for _, test := range []simpleWriteCase{
 		{
 			Name:     "empty",
 			Expected: "+\r\n",
@@ -444,14 +459,18 @@ func TestWriterWriteSimpleString(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleWrite(t, test.In, []byte(test.Expected), (*resp.Writer).WriteSimpleString)
+			if test.In != nil {
+				testSimpleWrite(t, string(test.In), []byte(test.Expected), (*resp.Writer).WriteSimpleString)
+			}
+
+			testSimpleWriteBytes(t, test.In, []byte(test.Expected), (*resp.Writer).WriteSimpleStringBytes)
 		})
 	}
 }
 
 func BenchmarkWriterWriteSimpleString(b *testing.B) {
 	for _, n := range []int{0, 1, 10, 100, 1000, 10000} {
-		s := bytes.Repeat([]byte{'X'}, n)
+		s := strings.Repeat("X", n)
 
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
 			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteSimpleString)
