@@ -1,3 +1,32 @@
 run:
   build-tags:
-    - integration
+  - integration
+linters:
+  enable:
+  - deadcode
+  - errcheck
+  - gocyclo
+  - goimports
+  - golint
+  - gosimple
+  - govet
+  - ineffassign
+  - lll
+  - maligned
+  - misspell
+  - nakedret
+  - prealloc
+  - staticcheck
+  - structcheck
+  - unconvert
+  - unparam
+  - unused
+  - typecheck
+  - varcheck
+  disable:
+  - depguard
+  - dupl
+  - gas
+  - goconst
+  - gofmt
+  - interfacer
