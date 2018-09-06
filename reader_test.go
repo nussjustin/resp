@@ -110,11 +110,13 @@ func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) 
 	sr := strings.NewReader(in)
 	r := resp.NewReader(sr)
 
+	buf := make([]byte, 0, len(in))
+
 	for i := 0; i < b.N; i++ {
 		sr.Reset(in)
 		r.Reset(sr)
 
-		if _, err := fn(r, nil); err != nil {
+		if _, err := fn(r, buf); err != nil {
 			b.Fatalf("read failed: %s", err)
 		}
 	}
