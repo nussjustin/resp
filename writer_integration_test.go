@@ -48,7 +48,7 @@ func mustWriteArrayHeader(tb testing.TB, w *resp.Writer, n int) {
 
 func mustWriteBulkString(tb testing.TB, w *resp.Writer, s []byte) {
 	tb.Helper()
-	mustWriteBytesFunc(tb, "bulk string", w.WriteBulkString, s)
+	mustWriteBytesFunc(tb, "bulk string", w.WriteBulkStringBytes, s)
 }
 
 func TestWriterIntegration(t *testing.T) {
