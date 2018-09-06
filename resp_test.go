@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"fmt"
-	"github.com/nussjustin/resp"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/nussjustin/resp"
 )
 
 func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
@@ -123,7 +124,7 @@ func TestReadWriter(t *testing.T) {
 		file := file
 
 		testName := filepath.Base(file)
-		testName = testName[:len(testName) - len(filepath.Ext(testName))]
+		testName = testName[:len(testName)-len(filepath.Ext(testName))]
 
 		t.Run(testName, func(t *testing.T) {
 			testReadWriterUsingFile(t, file)
@@ -160,7 +161,7 @@ func BenchmarkReadWriter(b *testing.B) {
 		file := file
 
 		testName := filepath.Base(file)
-		testName = testName[:len(testName) - len(filepath.Ext(testName))]
+		testName = testName[:len(testName)-len(filepath.Ext(testName))]
 
 		b.Run(testName, func(b *testing.B) {
 			benchmarkReadWriterUsingFile(b, file)
