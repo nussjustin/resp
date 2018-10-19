@@ -1,0 +1,28 @@
++
++OK
++OK hello world
+-
+-ERR
+-ERR hello world
+:-1000
+:-100
+:-10
+:-1
+:0
+:1
+:10
+:100
+:1000
+$-1
+$0
+
+$1
+a
+$5
+hello
+$11
+hello world
+*-1
+*0
+*1
+*10
