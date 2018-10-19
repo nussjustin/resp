@@ -13,8 +13,8 @@ import (
 	"github.com/nussjustin/resp"
 )
 
-var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
-	resp.TypeArray: func(tb testing.TB, rw *resp.ReadWriter) {
+var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
+	resp.TypeArray: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
 		n, err := rw.ReadArrayHeader()
 		if err != nil {
 			tb.Fatalf("failed to read array header: %s", err)
@@ -23,17 +23,17 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
 			tb.Fatalf("failed to write array header for array of size %d: %s", n, err)
 		}
 	},
-	resp.TypeBulkString: func(tb testing.TB, rw *resp.ReadWriter) {
-		s, err := rw.ReadBulkString(nil)
+	resp.TypeBulkString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+		s, err := rw.ReadBulkString(buf)
 		if err != nil {
-			tb.Fatalf("failed to bulk string: %s", err)
+			tb.Fatalf("failed to read bulk string: %s", err)
 		}
 		if _, err := rw.WriteBulkStringBytes(s); err != nil {
 			tb.Fatalf("failed to write bulk string %q: %s", s, err)
 		}
 	},
-	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter) {
-		s, err := rw.ReadError(nil)
+	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+		s, err := rw.ReadError(buf)
 		if err != nil {
 			tb.Fatalf("failed to read error: %s", err)
 		}
@@ -41,7 +41,7 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
 			tb.Fatalf("failed to write error %q: %s", s, err)
 		}
 	},
-	resp.TypeInteger: func(tb testing.TB, rw *resp.ReadWriter) {
+	resp.TypeInteger: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
 		n, err := rw.ReadInteger()
 		if err != nil {
 			tb.Fatalf("failed to read integer: %s", err)
@@ -50,8 +50,8 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
 			tb.Fatalf("failed to write integer size %d: %s", n, err)
 		}
 	},
-	resp.TypeSimpleString: func(tb testing.TB, rw *resp.ReadWriter) {
-		s, err := rw.ReadSimpleString(nil)
+	resp.TypeSimpleString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+		s, err := rw.ReadSimpleString(buf)
 		if err != nil {
 			tb.Fatalf("failed to read simple string: %s", err)
 		}
@@ -59,12 +59,15 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter){
 			tb.Fatalf("failed to write simple string %q: %s", s, err)
 		}
 	},
-	resp.TypeInvalid: func(tb testing.TB, rw *resp.ReadWriter) {
+	resp.TypeInvalid: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
 		tb.Fatal("found invalid type")
 	},
 }
 
-func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
+func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+	if buf == nil {
+		buf = make([]byte, 4096)
+	}
 	for {
 		ty, err := rw.Peek()
 		if err == io.EOF {
@@ -78,7 +81,7 @@ func copyReaderToWriter(tb testing.TB, rw *resp.ReadWriter) {
 		if fn == nil {
 			tb.Fatalf("found unknown type: %#v", ty)
 		}
-		fn(tb, rw)
+		fn(tb, rw, buf[:0])
 	}
 }
 
@@ -121,7 +124,7 @@ func testReadWriterUsingFile(t *testing.T, fileName string) {
 		Writer: io.MultiWriter(&out, outHash),
 	})
 
-	copyReaderToWriter(t, rw)
+	copyReaderToWriter(t, rw, nil)
 
 	if inSum, outSum := inHash.Sum(nil), outHash.Sum(nil); !bytes.Equal(inSum, outSum) {
 		t.Errorf("sha1 hashes differ: got %x, expected %x", outSum, inSum)
@@ -156,13 +159,17 @@ func benchmarkReadWriterUsingFile(b *testing.B, fileName string) {
 
 	rw := resp.NewReadWriter(nil)
 
+	buf := make([]byte, 4096)
+
+	b.SetBytes(int64(len(fileBytes)))
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
 		fileBytesReader.Reset(fileBytes)
 		rw.Reset(srw)
 
-		copyReaderToWriter(b, rw)
+		copyReaderToWriter(b, rw, buf)
 	}
 }
 
