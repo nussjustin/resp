@@ -311,6 +311,11 @@ func TestReaderReadBulkString(t *testing.T) {
 			In:       "$500\r\n" + strings.Repeat("hello", 100) + "\r\n",
 		},
 		{
+			Name:     "larger than buffer",
+			Expected: bytes.Repeat([]byte("hello world"), 1000),
+			In:       "$11000\r\n" + strings.Repeat("hello world", 1000) + "\r\n",
+		},
+		{
 			Name: "no \\r",
 			Err:  resp.ErrUnexpectedEOL,
 			In:   "$0\r\n\n",
@@ -525,6 +530,11 @@ func TestReaderReadError(t *testing.T) {
 			In:       "-ERR " + strings.Repeat("a", 100) + "\r\n",
 		},
 		{
+			Name:     "larger than buffer",
+			Expected: []byte("ERR " + strings.Repeat("hello world", 1000)),
+			In:       "-ERR " + strings.Repeat("hello world", 1000) + "\r\n",
+		},
+		{
 			Name: "no \\r",
 			Err:  resp.ErrUnexpectedEOL,
 			In:   "-ERR\n",
@@ -699,6 +709,11 @@ func TestReaderReadSimpleString(t *testing.T) {
 			In:       "+OK " + strings.Repeat("a", 100) + "\r\n",
 		},
 		{
+			Name:     "larger than buffer",
+			Expected: []byte("OK " + strings.Repeat("hello world", 1000)),
+			In:       "+OK " + strings.Repeat("hello world", 1000) + "\r\n",
+		},
+		{
 			Name: "no \\r",
 			Err:  resp.ErrUnexpectedEOL,
 			In:   "+OK\n",
@@ -740,15 +755,15 @@ func TestReaderReadMixed(t *testing.T) {
 	r := resp.NewReader(strings.NewReader(data))
 
 	if s, err := r.ReadSimpleString(nil); err != nil || string(s) != "OK" {
-		t.Fatalf("failed to read simple string: %s", err)
+		t.Fatalf("failed to read simple string: %q %s", s, err)
 	}
 
 	if s, err := r.ReadError(nil); err != nil || string(s) != "ERR something went wrong" {
-		t.Fatalf("failed to read error: %s", err)
+		t.Fatalf("failed to read error: %q %s", s, err)
 	}
 
 	if s, err := r.ReadBulkString(nil); err != nil || string(s) != "hello" {
-		t.Fatalf("failed to read bulk string: %s", err)
+		t.Fatalf("failed to read bulk string: %q %s", s, err)
 	}
 
 	if n, err := r.ReadArrayHeader(); err != nil || n != 3 {
