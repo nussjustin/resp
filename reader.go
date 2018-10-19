@@ -115,40 +115,56 @@ loop:
 }
 
 func (rr *Reader) readLine(dst []byte) ([]byte, error) {
-	line, err := rr.br.ReadSlice('\n')
-	if err == io.EOF {
-		return nil, ErrUnexpectedEOL
+	for {
+		line, err := rr.br.ReadSlice('\n')
+		if err != nil && err != bufio.ErrBufferFull {
+			if err == io.EOF {
+				return nil, ErrUnexpectedEOL
+			}
+			return nil, err
+		}
+		dst = append(dst, line...)
+		if line[len(line)-1] == '\n' {
+			break
+		}
 	}
-	if err != nil {
-		return nil, err
-	}
-	if len(line) < 2 || line[len(line)-2] != '\r' {
-		return nil, ErrUnexpectedEOL
-	}
-	if dst = append(dst, line[:len(line)-2]...); dst == nil {
-		dst = []byte{} // make sure we don't return nil, so we can distinguish this from a NULL response
-	}
-	return dst, nil
+	return removeEOLMarker(dst)
 }
 
 func (rr *Reader) readLineN(dst []byte, n int) ([]byte, error) {
-	line, err := rr.br.Peek(n + 2)
-	if err == io.EOF {
+	n += len("\r\n")
+	dst = ensureSpace(dst, n)
+	for n > 0 {
+		line, err := rr.br.Peek(n)
+		if err != nil && err != bufio.ErrBufferFull {
+			if err == io.EOF {
+				err = ErrUnexpectedEOL
+			}
+			return nil, err
+		}
+		dst = append(dst, line...)
+		n -= len(line)
+		if _, err := rr.br.Discard(len(line)); err != nil {
+			return nil, err
+		}
+	}
+	return removeEOLMarker(dst)
+}
+
+func ensureSpace(b []byte, n int) []byte {
+	if m := cap(b) - len(b); m < n {
+		newb := make([]byte, len(b), len(b)+n)
+		copy(newb, b)
+		return newb
+	}
+	return b
+}
+
+func removeEOLMarker(b []byte) ([]byte, error) {
+	if len(b) < 2 || b[len(b)-2] != '\r' || b[len(b)-1] != '\n' {
 		return nil, ErrUnexpectedEOL
 	}
-	if err != nil {
-		return nil, err
-	}
-	if len(line) != n+2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
-		return nil, ErrUnexpectedEOL
-	}
-	if dst = append(dst, line[:len(line)-2]...); dst == nil {
-		dst = []byte{} // make sure we don't return nil, so we can distinguish this from a NULL response
-	}
-	if _, err := rr.br.Discard(len(line)); err != nil {
-		return nil, err
-	}
-	return dst, nil
+	return b[:len(b)-2], nil
 }
 
 // Read reads raw data from the underlying io.Reader into dst.
