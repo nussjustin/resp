@@ -65,8 +65,8 @@ func (rr *Reader) expect(t Type) error {
 	return err
 }
 
-func (rr *Reader) readNumberLine() (int, error) {
-	var n int
+func (rr *Reader) readNumberLine() (int64, error) {
+	var n int64
 	var neg bool
 
 loop:
@@ -81,7 +81,7 @@ loop:
 			neg = true
 		case b >= '0' && b <= '9':
 			n *= 10
-			n += int(b - '0')
+			n += int64(b - '0')
 		case b == '\r':
 			b1, err := rr.br.ReadByte()
 			if err == io.EOF {
@@ -177,7 +177,7 @@ func (rr *Reader) Read(dst []byte) (n int, err error) {
 // ReadArrayHeader reads an array header, returning the array length.
 //
 // If the next type in the response is not an array, ErrUnexpectedType is returned.
-func (rr *Reader) ReadArrayHeader() (int, error) {
+func (rr *Reader) ReadArrayHeader() (int64, error) {
 	if err := rr.expect(TypeArray); err != nil {
 		return 0, err
 	}
@@ -191,7 +191,7 @@ func (rr *Reader) ReadArrayHeader() (int, error) {
 // ReadBlobStringHeader reads a blob string header, returning the length, without reading the blob string itself.
 //
 // If the next type in the response is not a blob string, ErrUnexpectedType is returned.
-func (rr *Reader) ReadBlobStringHeader() (int, error) {
+func (rr *Reader) ReadBlobStringHeader() (int64, error) {
 	if err := rr.expect(TypeBlobString); err != nil {
 		return 0, err
 	}
@@ -213,7 +213,7 @@ func (rr *Reader) ReadBlobString(dst []byte) ([]byte, error) {
 	if n == -1 || err != nil {
 		return nil, err
 	}
-	return rr.readLineN(dst, n)
+	return rr.readLineN(dst, int(n))
 }
 
 // ReadSimpleError reads an error into the byte slice dst and returns the modified slice.
@@ -229,7 +229,7 @@ func (rr *Reader) ReadSimpleError(dst []byte) ([]byte, error) {
 // ReadNumber reads a single RESP number.
 //
 // If the next type in the response is not an number, ErrUnexpectedType is returned.
-func (rr *Reader) ReadNumber() (int, error) {
+func (rr *Reader) ReadNumber() (int64, error) {
 	if err := rr.expect(TypeNumber); err != nil {
 		return 0, err
 	}

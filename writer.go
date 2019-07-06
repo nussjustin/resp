@@ -65,7 +65,7 @@ var nilArrayHeaderBytes = []byte("*-1\r\n")
 // WriteArrayHeader writes an array header for an array of length n.
 //
 // If n is < -1, ErrInvalidArrayLength is returned.
-func (rw *Writer) WriteArrayHeader(n int) (int, error) {
+func (rw *Writer) WriteArrayHeader(n int64) (int, error) {
 	if n < -1 {
 		return 0, ErrInvalidArrayLength
 	}
@@ -74,7 +74,7 @@ func (rw *Writer) WriteArrayHeader(n int) (int, error) {
 		return rw.w.Write(nilArrayHeaderBytes)
 	}
 
-	return rw.writeNumber('*', int64(n))
+	return rw.writeNumber('*', n)
 }
 
 var nilBlobStringHeaderBytes = []byte("$-1\r\n")
@@ -82,7 +82,7 @@ var nilBlobStringHeaderBytes = []byte("$-1\r\n")
 // WriteBlobStringHeader writes a blob string header for an blob string of length n.
 //
 // If n is < -1, ErrInvalidBlobStringLength is returned.
-func (rw *Writer) WriteBlobStringHeader(n int) (int, error) {
+func (rw *Writer) WriteBlobStringHeader(n int64) (int, error) {
 	if n < -1 {
 		return 0, ErrInvalidBlobStringLength
 	}
@@ -135,7 +135,7 @@ func (rw *Writer) WriteSimpleErrorBytes(s []byte) (int, error) {
 }
 
 // WriteNumber writes the number i as the native RESP number type.
-func (rw *Writer) WriteNumber(i int) (int, error) {
+func (rw *Writer) WriteNumber(i int64) (int, error) {
 	return rw.writeNumber(TypeNumber, int64(i))
 }
 

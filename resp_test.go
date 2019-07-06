@@ -32,7 +32,7 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 			tb.Fatalf("failed to write blob string %q: %s", s, err)
 		}
 	},
-	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+	resp.TypeSimpleError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
 		s, err := rw.ReadSimpleError(buf)
 		if err != nil {
 			tb.Fatalf("failed to read error: %s", err)

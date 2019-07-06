@@ -59,7 +59,7 @@ func TestWriterReset(t *testing.T) {
 	assertBytes(t, b3.Bytes(), "!")
 }
 
-func benchmarkSimpleNumberWrite(b *testing.B, n int, fn func(*resp.Writer, int) (int, error)) {
+func benchmarkSimpleNumberWrite(b *testing.B, n int64, fn func(*resp.Writer, int64) (int, error)) {
 	w := resp.NewWriter(ioutil.Discard)
 
 	for i := 0; i < b.N; i++ {
@@ -194,7 +194,7 @@ func TestWriterWriteArrayHeader(t *testing.T) {
 		Name     string
 		Expected string
 		Err      error
-		N        int
+		N        int64
 	}{
 		{
 			Name:     "nil",
@@ -243,8 +243,8 @@ func TestWriterWriteArrayHeader(t *testing.T) {
 }
 
 func BenchmarkWriterWriteArrayHeader(b *testing.B) {
-	for _, n := range []int{-1, 0, 100} {
-		b.Run(strconv.Itoa(n), func(b *testing.B) {
+	for _, n := range []int64{-1, 0, 100} {
+		b.Run(strconv.FormatInt(n, 10), func(b *testing.B) {
 			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteArrayHeader)
 		})
 	}
@@ -295,8 +295,8 @@ func TestWriterWriteBlobString(t *testing.T) {
 }
 
 func BenchmarkWriterWriteBlobString(b *testing.B) {
-	for _, n := range []int{-1, 0, 100} {
-		b.Run(strconv.Itoa(n), func(b *testing.B) {
+	for _, n := range []int64{-1, 0, 100} {
+		b.Run(strconv.FormatInt(n, 10), func(b *testing.B) {
 			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteBlobStringHeader)
 		})
 	}
@@ -307,7 +307,7 @@ func TestWriterWriteBlobStringHeader(t *testing.T) {
 		Name     string
 		Expected string
 		Err      error
-		N        int
+		N        int64
 	}{
 		{
 			Name:     "nil",
@@ -387,7 +387,7 @@ func TestWriterWriteNumber(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
 		Expected string
-		I        int
+		I        int64
 	}{
 		{
 			Name:     "zero",
@@ -431,8 +431,8 @@ func TestWriterWriteNumber(t *testing.T) {
 }
 
 func BenchmarkWriterWriteNumber(b *testing.B) {
-	for _, n := range []int{-1, 0, 100} {
-		b.Run(strconv.Itoa(n), func(b *testing.B) {
+	for _, n := range []int64{-1, 0, 100} {
+		b.Run(strconv.FormatInt(n, 10), func(b *testing.B) {
 			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteNumber)
 		})
 	}

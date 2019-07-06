@@ -92,7 +92,7 @@ func TestReaderRead(t *testing.T) {
 	}
 }
 
-func benchmarkSimpleNumberRead(b *testing.B, in string, fn func(*resp.Reader) (int, error)) {
+func benchmarkSimpleNumberRead(b *testing.B, in string, fn func(*resp.Reader) (int64, error)) {
 	sr := strings.NewReader(in)
 	r := resp.NewReader(sr)
 
@@ -122,7 +122,7 @@ func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) 
 	}
 }
 
-func testSimpleNumberRead(tb testing.TB, input string, expected int, err error, fn func(*resp.Reader) (int, error)) {
+func testSimpleNumberRead(tb testing.TB, input string, expected int64, err error, fn func(*resp.Reader) (int64, error)) {
 	tb.Helper()
 
 	r := resp.NewReader(strings.NewReader(input))
@@ -166,7 +166,7 @@ func testSimpleRead(tb testing.TB,
 func TestReaderReadArrayHeader(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
-		Expected int
+		Expected int64
 		Err      error
 		In       string
 	}{
@@ -395,7 +395,7 @@ func BenchmarkReaderReadBlobString(b *testing.B) {
 func TestReaderReadBlobStringHeader(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
-		Expected int
+		Expected int64
 		Err      error
 		In       string
 	}{
@@ -573,7 +573,7 @@ func BenchmarkReaderReadError(b *testing.B) {
 func TestReaderReadNumber(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
-		Expected int
+		Expected int64
 		Err      error
 		In       string
 	}{
