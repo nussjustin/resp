@@ -553,7 +553,7 @@ func TestReaderReadError(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadError)
+			testSimpleRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadSimpleError)
 		})
 	}
 }
@@ -565,7 +565,7 @@ func BenchmarkReaderReadError(b *testing.B) {
 		"-ERR some long error text\r\n",
 	} {
 		b.Run(s, func(b *testing.B) {
-			benchmarkSimpleRead(b, s, (*resp.Reader).ReadError)
+			benchmarkSimpleRead(b, s, (*resp.Reader).ReadSimpleError)
 		})
 	}
 }
@@ -758,7 +758,7 @@ func TestReaderReadMixed(t *testing.T) {
 		t.Fatalf("failed to read simple string: %q %s", s, err)
 	}
 
-	if s, err := r.ReadError(nil); err != nil || string(s) != "ERR something went wrong" {
+	if s, err := r.ReadSimpleError(nil); err != nil || string(s) != "ERR something went wrong" {
 		t.Fatalf("failed to read error: %q %s", s, err)
 	}
 

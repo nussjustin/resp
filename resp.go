@@ -33,10 +33,10 @@ const (
 	TypeArray Type = '*'
 	// TypeBulkString signifies a RESP bulk string.
 	TypeBulkString Type = '$'
-	// TypeError signifies an error string.
-	TypeError Type = '-'
 	// TypeInteger signifies a integer.
 	TypeInteger Type = ':'
+	// TypeError signifies an error string.
+	TypeSimpleError Type = '-'
 	// TypeSimpleString signifies a simple string.
 	TypeSimpleString Type = '+'
 )
@@ -46,8 +46,8 @@ var _ fmt.Stringer = TypeInvalid
 var types = [255]Type{
 	TypeArray:        TypeArray,
 	TypeBulkString:   TypeBulkString,
-	TypeError:        TypeError,
 	TypeInteger:      TypeInteger,
+	TypeSimpleError:  TypeSimpleError,
 	TypeSimpleString: TypeSimpleString,
 }
 

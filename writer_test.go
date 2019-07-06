@@ -368,8 +368,8 @@ func BenchmarkWriterWriteBulkStringHeader(b *testing.B) {
 func TestWriterWriteError(t *testing.T) {
 	for _, test := range prefixedSimpleWriteCases("-") {
 		test.run(t,
-			(*resp.Writer).WriteError,
-			(*resp.Writer).WriteErrorBytes)
+			(*resp.Writer).WriteSimpleError,
+			(*resp.Writer).WriteSimpleErrorBytes)
 	}
 }
 
@@ -378,7 +378,7 @@ func BenchmarkWriterWriteError(b *testing.B) {
 		s := strings.Repeat("X", n)
 
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteError)
+			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteSimpleError)
 		})
 	}
 }

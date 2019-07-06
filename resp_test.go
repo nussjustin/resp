@@ -33,11 +33,11 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 		}
 	},
 	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
-		s, err := rw.ReadError(buf)
+		s, err := rw.ReadSimpleError(buf)
 		if err != nil {
 			tb.Fatalf("failed to read error: %s", err)
 		}
-		if _, err := rw.WriteErrorBytes(s); err != nil {
+		if _, err := rw.WriteSimpleErrorBytes(s); err != nil {
 			tb.Fatalf("failed to write error %q: %s", s, err)
 		}
 	},

@@ -54,7 +54,7 @@ func assertReadBulkString(tb testing.TB, r *resp.Reader, s []byte) {
 
 func assertReadError(tb testing.TB, r *resp.Reader, s []byte) {
 	tb.Helper()
-	assertReadBytesFunc(tb, "error", r.ReadError, s)
+	assertReadBytesFunc(tb, "error", r.ReadSimpleError, s)
 }
 
 func assertReadInteger(tb testing.TB, r *resp.Reader, n int) {

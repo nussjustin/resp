@@ -124,13 +124,13 @@ func (rw *Writer) WriteBulkStringBytes(s []byte) (int, error) {
 	return rw.w.Write(rw.buf)
 }
 
-// WriteError writes the string s unvalidated as a simple error.
-func (rw *Writer) WriteError(s string) (int, error) {
+// WriteSimpleError writes the string s unvalidated as a simple error.
+func (rw *Writer) WriteSimpleError(s string) (int, error) {
 	return rw.writeString('-', s)
 }
 
-// WriteErrorBytes writes the byte slice s unvalidated as a simple error.
-func (rw *Writer) WriteErrorBytes(s []byte) (int, error) {
+// WriteSimpleErrorBytes writes the byte slice s unvalidated as a simple error.
+func (rw *Writer) WriteSimpleErrorBytes(s []byte) (int, error) {
 	return rw.writeBytes('-', s)
 }
 

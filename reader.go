@@ -216,11 +216,11 @@ func (rr *Reader) ReadBulkString(dst []byte) ([]byte, error) {
 	return rr.readLineN(dst, n)
 }
 
-// ReadError reads an error into the byte slice dst and returns the modified slice.
+// ReadSimpleError reads an error into the byte slice dst and returns the modified slice.
 //
 // If the next type in the response is not an error, ErrUnexpectedType is returned.
-func (rr *Reader) ReadError(dst []byte) ([]byte, error) {
-	if err := rr.expect(TypeError); err != nil {
+func (rr *Reader) ReadSimpleError(dst []byte) ([]byte, error) {
+	if err := rr.expect(TypeSimpleError); err != nil {
 		return nil, err
 	}
 	return rr.readLine(dst)
