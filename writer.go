@@ -77,27 +77,27 @@ func (rw *Writer) WriteArrayHeader(n int) (int, error) {
 	return rw.writeNumber('*', int64(n))
 }
 
-var nilBulkStringHeaderBytes = []byte("$-1\r\n")
+var nilBlobStringHeaderBytes = []byte("$-1\r\n")
 
-// WriteBulkStringHeader writes a bulk string header for an bulk string of length n.
+// WriteBlobStringHeader writes a blob string header for an blob string of length n.
 //
-// If n is < -1, ErrInvalidBulkStringLength is returned.
-func (rw *Writer) WriteBulkStringHeader(n int) (int, error) {
+// If n is < -1, ErrInvalidBlobStringLength is returned.
+func (rw *Writer) WriteBlobStringHeader(n int) (int, error) {
 	if n < -1 {
-		return 0, ErrInvalidBulkStringLength
+		return 0, ErrInvalidBlobStringLength
 	}
 
 	if n == -1 { // fast-path
-		return rw.w.Write(nilBulkStringHeaderBytes)
+		return rw.w.Write(nilBlobStringHeaderBytes)
 	}
 
 	return rw.writeNumber('$', int64(n))
 }
 
-// WriteBulkString writes the string s as bulk string.
+// WriteBlobString writes the string s as blob string.
 //
-// If you need to write a nil bulk string, use WriteBulkStringBytes instead.
-func (rw *Writer) WriteBulkString(s string) (int, error) {
+// If you need to write a nil blob string, use WriteBlobStringBytes instead.
+func (rw *Writer) WriteBlobString(s string) (int, error) {
 	rw.buf = rw.buf[:0]
 	rw.buf = append(rw.buf, '$')
 	rw.buf = strconv.AppendUint(rw.buf, uint64(len(s)), 10)
@@ -108,10 +108,10 @@ func (rw *Writer) WriteBulkString(s string) (int, error) {
 	return rw.w.Write(rw.buf)
 }
 
-// WriteBulkStringBytes writes the byte slice s as bulk string.
-func (rw *Writer) WriteBulkStringBytes(s []byte) (int, error) {
+// WriteBlobStringBytes writes the byte slice s as blob string.
+func (rw *Writer) WriteBlobStringBytes(s []byte) (int, error) {
 	if s == nil {
-		return rw.WriteBulkStringHeader(-1)
+		return rw.WriteBlobStringHeader(-1)
 	}
 
 	rw.buf = rw.buf[:0]

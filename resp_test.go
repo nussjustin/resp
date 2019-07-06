@@ -23,13 +23,13 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 			tb.Fatalf("failed to write array header for array of size %d: %s", n, err)
 		}
 	},
-	resp.TypeBulkString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
-		s, err := rw.ReadBulkString(buf)
+	resp.TypeBlobString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
+		s, err := rw.ReadBlobString(buf)
 		if err != nil {
-			tb.Fatalf("failed to read bulk string: %s", err)
+			tb.Fatalf("failed to read blob string: %s", err)
 		}
-		if _, err := rw.WriteBulkStringBytes(s); err != nil {
-			tb.Fatalf("failed to write bulk string %q: %s", s, err)
+		if _, err := rw.WriteBlobStringBytes(s); err != nil {
+			tb.Fatalf("failed to write blob string %q: %s", s, err)
 		}
 	},
 	resp.TypeError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {

@@ -250,7 +250,7 @@ func BenchmarkWriterWriteArrayHeader(b *testing.B) {
 	}
 }
 
-func TestWriterWriteBulkString(t *testing.T) {
+func TestWriterWriteBlobString(t *testing.T) {
 	for _, test := range []simpleWriteCase{
 		{
 			Name:     "empty",
@@ -289,20 +289,20 @@ func TestWriterWriteBulkString(t *testing.T) {
 		},
 	} {
 		test.run(t,
-			(*resp.Writer).WriteBulkString,
-			(*resp.Writer).WriteBulkStringBytes)
+			(*resp.Writer).WriteBlobString,
+			(*resp.Writer).WriteBlobStringBytes)
 	}
 }
 
-func BenchmarkWriterWriteBulkString(b *testing.B) {
+func BenchmarkWriterWriteBlobString(b *testing.B) {
 	for _, n := range []int{-1, 0, 100} {
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleIntegerWrite(b, n, (*resp.Writer).WriteBulkStringHeader)
+			benchmarkSimpleIntegerWrite(b, n, (*resp.Writer).WriteBlobStringHeader)
 		})
 	}
 }
 
-func TestWriterWriteBulkStringHeader(t *testing.T) {
+func TestWriterWriteBlobStringHeader(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
 		Expected string
@@ -321,7 +321,7 @@ func TestWriterWriteBulkStringHeader(t *testing.T) {
 		},
 		{
 			Name: "below -1",
-			Err:  resp.ErrInvalidBulkStringLength,
+			Err:  resp.ErrInvalidBlobStringLength,
 			N:    -5,
 		},
 		{
@@ -346,7 +346,7 @@ func TestWriterWriteBulkStringHeader(t *testing.T) {
 			var buf bytes.Buffer
 			w := resp.NewWriter(&buf)
 
-			if _, err := w.WriteBulkStringHeader(test.N); err != test.Err {
+			if _, err := w.WriteBlobStringHeader(test.N); err != test.Err {
 				t.Errorf("got error %v, expected %v", err, test.Err)
 			} else if got := buf.String(); got != test.Expected {
 				t.Errorf("got %q, expected %q", got, test.Expected)
@@ -355,12 +355,12 @@ func TestWriterWriteBulkStringHeader(t *testing.T) {
 	}
 }
 
-func BenchmarkWriterWriteBulkStringHeader(b *testing.B) {
+func BenchmarkWriterWriteBlobStringHeader(b *testing.B) {
 	for _, n := range []int{0, 1, 10, 100, 1000, 10000} {
 		s := strings.Repeat("X", n)
 
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteBulkString)
+			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteBlobString)
 		})
 	}
 }

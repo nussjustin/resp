@@ -10,8 +10,8 @@ var (
 	// ErrInvalidArrayLength is returned when reading or writing an array header with an invalid length.
 	ErrInvalidArrayLength = errors.New("array length must be >= -1")
 
-	// ErrInvalidBulkStringLength is returned when reading or writing a bulk string with an invalid length.
-	ErrInvalidBulkStringLength = errors.New("bulk string length must be >= -1")
+	// ErrInvalidBlobStringLength is returned when reading or writing a blob string with an invalid length.
+	ErrInvalidBlobStringLength = errors.New("blob string length must be >= -1")
 
 	// ErrInvalidInteger is returned when decoding an invalid integer.
 	ErrInvalidInteger = errors.New("invalid integer")
@@ -31,8 +31,8 @@ const (
 	TypeInvalid Type = 0
 	// TypeArray signifies a RESP array.
 	TypeArray Type = '*'
-	// TypeBulkString signifies a RESP bulk string.
-	TypeBulkString Type = '$'
+	// TypeBlobString signifies a RESP blob string.
+	TypeBlobString Type = '$'
 	// TypeInteger signifies a integer.
 	TypeInteger Type = ':'
 	// TypeError signifies an error string.
@@ -45,7 +45,7 @@ var _ fmt.Stringer = TypeInvalid
 
 var types = [255]Type{
 	TypeArray:        TypeArray,
-	TypeBulkString:   TypeBulkString,
+	TypeBlobString:   TypeBlobString,
 	TypeInteger:      TypeInteger,
 	TypeSimpleError:  TypeSimpleError,
 	TypeSimpleString: TypeSimpleString,

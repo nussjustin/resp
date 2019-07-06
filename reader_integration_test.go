@@ -47,9 +47,9 @@ func assertReadArrayHeader(tb testing.TB, r *resp.Reader, n int) {
 	assertReadIntegerFunc(tb, "array header", r.ReadArrayHeader, n)
 }
 
-func assertReadBulkString(tb testing.TB, r *resp.Reader, s []byte) {
+func assertReadBlobString(tb testing.TB, r *resp.Reader, s []byte) {
 	tb.Helper()
-	assertReadBytesFunc(tb, "bulk string", r.ReadBulkString, s)
+	assertReadBytesFunc(tb, "blob string", r.ReadBlobString, s)
 }
 
 func assertReadError(tb testing.TB, r *resp.Reader, s []byte) {
@@ -72,14 +72,14 @@ func TestReaderIntegration(t *testing.T) {
 		r := resp.NewReader(conn)
 
 		mustWriteLines(t, conn, "*2", "$3", "GET", "$6", "string")
-		assertReadBulkString(t, r, nil)
+		assertReadBlobString(t, r, nil)
 
 		mustWriteLines(t, conn, "*3", "$3", "SET", "$6", "string", "$6", "value1")
 		assertReadSimpleString(t, r, []byte("OK"))
 		mustWriteLines(t, conn, "*4", "$3", "SET", "$6", "string", "$6", "value2", "$2", "NX")
-		assertReadBulkString(t, r, nil)
+		assertReadBlobString(t, r, nil)
 		mustWriteLines(t, conn, "*2", "$3", "GET", "$6", "string")
-		assertReadBulkString(t, r, []byte("value1"))
+		assertReadBlobString(t, r, []byte("value1"))
 
 		mustWriteLines(t, conn, "*2", "$8", "SMEMBERS", "$3", "set")
 		assertReadArrayHeader(t, r, 0)
@@ -89,7 +89,7 @@ func TestReaderIntegration(t *testing.T) {
 		assertReadInteger(t, r, 0)
 		mustWriteLines(t, conn, "*2", "$8", "SMEMBERS", "$3", "set")
 		assertReadArrayHeader(t, r, 1)
-		assertReadBulkString(t, r, []byte("value3"))
+		assertReadBlobString(t, r, []byte("value3"))
 
 		mustWriteLines(t, conn, "*4", "$4", "ZADD", "$3", "set", "$3", "100", "$6", "value4")
 		assertReadError(t, r, []byte("WRONGTYPE Operation against a key holding the wrong kind of value"))

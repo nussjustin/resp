@@ -188,28 +188,28 @@ func (rr *Reader) ReadArrayHeader() (int, error) {
 	return n, err
 }
 
-// ReadBulkStringHeader reads a bulk string header, returning the length, without reading the bulk string itself.
+// ReadBlobStringHeader reads a blob string header, returning the length, without reading the blob string itself.
 //
-// If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
-func (rr *Reader) ReadBulkStringHeader() (int, error) {
-	if err := rr.expect(TypeBulkString); err != nil {
+// If the next type in the response is not a blob string, ErrUnexpectedType is returned.
+func (rr *Reader) ReadBlobStringHeader() (int, error) {
+	if err := rr.expect(TypeBlobString); err != nil {
 		return 0, err
 	}
 	n, err := rr.readNumberLine()
 	if n < -1 || err == ErrInvalidInteger {
-		n, err = 0, ErrInvalidBulkStringLength
+		n, err = 0, ErrInvalidBlobStringLength
 	}
 	return n, err
 }
 
-// ReadBulkString reads a bulk string into the byte slice dst and returns the modified slice.
+// ReadBlobString reads a blob string into the byte slice dst and returns the modified slice.
 //
-// For null bulk strings the returned slice will always be nil.
-// For non-null bulk strings the returned slice will only be nil if there was an error.
+// For null blob strings the returned slice will always be nil.
+// For non-null blob strings the returned slice will only be nil if there was an error.
 //
-// If the next type in the response is not a bulk string, ErrUnexpectedType is returned.
-func (rr *Reader) ReadBulkString(dst []byte) ([]byte, error) {
-	n, err := rr.ReadBulkStringHeader()
+// If the next type in the response is not a blob string, ErrUnexpectedType is returned.
+func (rr *Reader) ReadBlobString(dst []byte) ([]byte, error) {
+	n, err := rr.ReadBlobStringHeader()
 	if n == -1 || err != nil {
 		return nil, err
 	}
