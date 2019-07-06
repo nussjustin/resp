@@ -41,13 +41,13 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 			tb.Fatalf("failed to write error %q: %s", s, err)
 		}
 	},
-	resp.TypeInteger: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
-		n, err := rw.ReadInteger()
+	resp.TypeNumber: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
+		n, err := rw.ReadNumber()
 		if err != nil {
-			tb.Fatalf("failed to read integer: %s", err)
+			tb.Fatalf("failed to read number: %s", err)
 		}
-		if _, err := rw.WriteInteger(n); err != nil {
-			tb.Fatalf("failed to write integer size %d: %s", n, err)
+		if _, err := rw.WriteNumber(n); err != nil {
+			tb.Fatalf("failed to write number size %d: %s", n, err)
 		}
 	},
 	resp.TypeSimpleString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {

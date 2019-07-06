@@ -33,7 +33,7 @@ func mustWriteBytesFunc(tb testing.TB, typeName string, f func([]byte) (int, err
 	}
 }
 
-func mustWriteIntegerFunc(tb testing.TB, typeName string, f func(int) (int, error), n int) {
+func mustWriteNumberFunc(tb testing.TB, typeName string, f func(int) (int, error), n int) {
 	tb.Helper()
 
 	if _, err := f(n); err != nil {
@@ -43,7 +43,7 @@ func mustWriteIntegerFunc(tb testing.TB, typeName string, f func(int) (int, erro
 
 func mustWriteArrayHeader(tb testing.TB, w *resp.Writer, n int) {
 	tb.Helper()
-	mustWriteIntegerFunc(tb, "array header", w.WriteArrayHeader, n)
+	mustWriteNumberFunc(tb, "array header", w.WriteArrayHeader, n)
 }
 
 func mustWriteBlobString(tb testing.TB, w *resp.Writer, s []byte) {

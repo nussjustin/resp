@@ -92,7 +92,7 @@ func TestReaderRead(t *testing.T) {
 	}
 }
 
-func benchmarkSimpleIntegerRead(b *testing.B, in string, fn func(*resp.Reader) (int, error)) {
+func benchmarkSimpleNumberRead(b *testing.B, in string, fn func(*resp.Reader) (int, error)) {
 	sr := strings.NewReader(in)
 	r := resp.NewReader(sr)
 
@@ -122,7 +122,7 @@ func benchmarkSimpleRead(b *testing.B, in string, fn func(*resp.Reader, []byte) 
 	}
 }
 
-func testSimpleIntegerRead(tb testing.TB, input string, expected int, err error, fn func(*resp.Reader) (int, error)) {
+func testSimpleNumberRead(tb testing.TB, input string, expected int, err error, fn func(*resp.Reader) (int, error)) {
 	tb.Helper()
 
 	r := resp.NewReader(strings.NewReader(input))
@@ -244,7 +244,7 @@ func TestReaderReadArrayHeader(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleIntegerRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadArrayHeader)
+			testSimpleNumberRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadArrayHeader)
 		})
 	}
 }
@@ -258,7 +258,7 @@ func BenchmarkReaderReadArrayHeader(b *testing.B) {
 		"*10000\r\n",
 	} {
 		b.Run(s, func(b *testing.B) {
-			benchmarkSimpleIntegerRead(b, s, (*resp.Reader).ReadArrayHeader)
+			benchmarkSimpleNumberRead(b, s, (*resp.Reader).ReadArrayHeader)
 		})
 	}
 }
@@ -473,7 +473,7 @@ func TestReaderReadBlobStringHeader(t *testing.T) {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleIntegerRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadBlobStringHeader)
+			testSimpleNumberRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadBlobStringHeader)
 		})
 	}
 }
@@ -487,7 +487,7 @@ func BenchmarkReaderReadBlobStringHeader(b *testing.B) {
 		"$10000\r\n",
 	} {
 		b.Run(s, func(b *testing.B) {
-			benchmarkSimpleIntegerRead(b, s, (*resp.Reader).ReadBlobStringHeader)
+			benchmarkSimpleNumberRead(b, s, (*resp.Reader).ReadBlobStringHeader)
 		})
 	}
 }
@@ -570,7 +570,7 @@ func BenchmarkReaderReadError(b *testing.B) {
 	}
 }
 
-func TestReaderReadInteger(t *testing.T) {
+func TestReaderReadNumber(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
 		Expected int
@@ -634,7 +634,7 @@ func TestReaderReadInteger(t *testing.T) {
 		},
 		{
 			Name: "no number",
-			Err:  resp.ErrInvalidInteger,
+			Err:  resp.ErrInvalidNumber,
 			In:   ":a\r\n",
 		},
 		{
@@ -644,19 +644,19 @@ func TestReaderReadInteger(t *testing.T) {
 		},
 		{
 			Name: "wrong \\r character",
-			Err:  resp.ErrInvalidInteger,
+			Err:  resp.ErrInvalidNumber,
 			In:   ":0a\n",
 		},
 	} {
 		test := test
 
 		t.Run(test.Name, func(t *testing.T) {
-			testSimpleIntegerRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadInteger)
+			testSimpleNumberRead(t, test.In, test.Expected, test.Err, (*resp.Reader).ReadNumber)
 		})
 	}
 }
 
-func BenchmarkReaderReadInteger(b *testing.B) {
+func BenchmarkReaderReadNumber(b *testing.B) {
 	for _, s := range []string{
 		":-100\r\n",
 		":-1\r\n",
@@ -666,7 +666,7 @@ func BenchmarkReaderReadInteger(b *testing.B) {
 		":10000\r\n",
 	} {
 		b.Run(s, func(b *testing.B) {
-			benchmarkSimpleIntegerRead(b, s, (*resp.Reader).ReadInteger)
+			benchmarkSimpleNumberRead(b, s, (*resp.Reader).ReadNumber)
 		})
 	}
 }
@@ -774,8 +774,8 @@ func TestReaderReadMixed(t *testing.T) {
 		t.Fatalf("failed to read blob string: %s", err)
 	}
 
-	if n, err := r.ReadInteger(); err != nil || n != 5 {
-		t.Fatalf("failed to read integer: %s", err)
+	if n, err := r.ReadNumber(); err != nil || n != 5 {
+		t.Fatalf("failed to read number: %s", err)
 	}
 
 	if n, err := r.ReadArrayHeader(); err != nil || n != -1 {

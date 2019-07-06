@@ -134,9 +134,9 @@ func (rw *Writer) WriteSimpleErrorBytes(s []byte) (int, error) {
 	return rw.writeBytes(TypeSimpleError, s)
 }
 
-// WriteInteger writes the integer i as the native RESP integer type.
-func (rw *Writer) WriteInteger(i int) (int, error) {
-	return rw.writeNumber(TypeInteger, int64(i))
+// WriteNumber writes the number i as the native RESP number type.
+func (rw *Writer) WriteNumber(i int) (int, error) {
+	return rw.writeNumber(TypeNumber, int64(i))
 }
 
 // WriteSimpleString writes the string s unvalidated as a simple string.

@@ -13,8 +13,8 @@ var (
 	// ErrInvalidBlobStringLength is returned when reading or writing a blob string with an invalid length.
 	ErrInvalidBlobStringLength = errors.New("blob string length must be >= -1")
 
-	// ErrInvalidInteger is returned when decoding an invalid integer.
-	ErrInvalidInteger = errors.New("invalid integer")
+	// ErrInvalidNumber is returned when decoding an invalid number.
+	ErrInvalidNumber = errors.New("invalid number")
 
 	// ErrUnexpectedEOL is returned when reading a line that does not end in \r.\n
 	ErrUnexpectedEOL = errors.New("missing or invalid EOL")
@@ -33,8 +33,8 @@ const (
 	TypeArray Type = '*'
 	// TypeBlobString signifies a RESP blob string.
 	TypeBlobString Type = '$'
-	// TypeInteger signifies a integer.
-	TypeInteger Type = ':'
+	// TypeNumber signifies a number.
+	TypeNumber Type = ':'
 	// TypeError signifies an error string.
 	TypeSimpleError Type = '-'
 	// TypeSimpleString signifies a simple string.
@@ -46,7 +46,7 @@ var _ fmt.Stringer = TypeInvalid
 var types = [255]Type{
 	TypeArray:        TypeArray,
 	TypeBlobString:   TypeBlobString,
-	TypeInteger:      TypeInteger,
+	TypeNumber:      TypeNumber,
 	TypeSimpleError:  TypeSimpleError,
 	TypeSimpleString: TypeSimpleString,
 }

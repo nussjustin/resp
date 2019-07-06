@@ -59,7 +59,7 @@ func TestWriterReset(t *testing.T) {
 	assertBytes(t, b3.Bytes(), "!")
 }
 
-func benchmarkSimpleIntegerWrite(b *testing.B, n int, fn func(*resp.Writer, int) (int, error)) {
+func benchmarkSimpleNumberWrite(b *testing.B, n int, fn func(*resp.Writer, int) (int, error)) {
 	w := resp.NewWriter(ioutil.Discard)
 
 	for i := 0; i < b.N; i++ {
@@ -245,7 +245,7 @@ func TestWriterWriteArrayHeader(t *testing.T) {
 func BenchmarkWriterWriteArrayHeader(b *testing.B) {
 	for _, n := range []int{-1, 0, 100} {
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleIntegerWrite(b, n, (*resp.Writer).WriteArrayHeader)
+			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteArrayHeader)
 		})
 	}
 }
@@ -297,7 +297,7 @@ func TestWriterWriteBlobString(t *testing.T) {
 func BenchmarkWriterWriteBlobString(b *testing.B) {
 	for _, n := range []int{-1, 0, 100} {
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleIntegerWrite(b, n, (*resp.Writer).WriteBlobStringHeader)
+			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteBlobStringHeader)
 		})
 	}
 }
@@ -383,7 +383,7 @@ func BenchmarkWriterWriteError(b *testing.B) {
 	}
 }
 
-func TestWriterWriteInteger(t *testing.T) {
+func TestWriterWriteNumber(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
 		Expected string
@@ -421,7 +421,7 @@ func TestWriterWriteInteger(t *testing.T) {
 			var buf bytes.Buffer
 			w := resp.NewWriter(&buf)
 
-			if _, err := w.WriteInteger(test.I); err != nil {
+			if _, err := w.WriteNumber(test.I); err != nil {
 				t.Errorf("got error %q", err)
 			} else if got := buf.String(); got != test.Expected {
 				t.Errorf("got %q, expected %q", got, test.Expected)
@@ -430,10 +430,10 @@ func TestWriterWriteInteger(t *testing.T) {
 	}
 }
 
-func BenchmarkWriterWriteInteger(b *testing.B) {
+func BenchmarkWriterWriteNumber(b *testing.B) {
 	for _, n := range []int{-1, 0, 100} {
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
-			benchmarkSimpleIntegerWrite(b, n, (*resp.Writer).WriteInteger)
+			benchmarkSimpleNumberWrite(b, n, (*resp.Writer).WriteNumber)
 		})
 	}
 }

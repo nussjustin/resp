@@ -103,7 +103,7 @@ loop:
 			return 0, ErrUnexpectedEOL
 		default:
 			_ = rr.br.UnreadByte()
-			return 0, ErrInvalidInteger
+			return 0, ErrInvalidNumber
 		}
 	}
 
@@ -182,7 +182,7 @@ func (rr *Reader) ReadArrayHeader() (int, error) {
 		return 0, err
 	}
 	n, err := rr.readNumberLine()
-	if n < -1 || err == ErrInvalidInteger {
+	if n < -1 || err == ErrInvalidNumber {
 		n, err = 0, ErrInvalidArrayLength
 	}
 	return n, err
@@ -196,7 +196,7 @@ func (rr *Reader) ReadBlobStringHeader() (int, error) {
 		return 0, err
 	}
 	n, err := rr.readNumberLine()
-	if n < -1 || err == ErrInvalidInteger {
+	if n < -1 || err == ErrInvalidNumber {
 		n, err = 0, ErrInvalidBlobStringLength
 	}
 	return n, err
@@ -226,11 +226,11 @@ func (rr *Reader) ReadSimpleError(dst []byte) ([]byte, error) {
 	return rr.readLine(dst)
 }
 
-// ReadInteger reads a single RESP integer.
+// ReadNumber reads a single RESP number.
 //
-// If the next type in the response is not an integer, ErrUnexpectedType is returned.
-func (rr *Reader) ReadInteger() (int, error) {
-	if err := rr.expect(TypeInteger); err != nil {
+// If the next type in the response is not an number, ErrUnexpectedType is returned.
+func (rr *Reader) ReadNumber() (int, error) {
+	if err := rr.expect(TypeNumber); err != nil {
 		return 0, err
 	}
 	return rr.readNumberLine()

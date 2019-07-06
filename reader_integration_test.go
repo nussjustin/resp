@@ -32,7 +32,7 @@ func assertReadBytesFunc(tb testing.TB, typeName string, f func([]byte) ([]byte,
 	}
 }
 
-func assertReadIntegerFunc(tb testing.TB, typeName string, f func() (int, error), expected int) {
+func assertReadNumberFunc(tb testing.TB, typeName string, f func() (int, error), expected int) {
 	tb.Helper()
 
 	if got, err := f(); err != nil {
@@ -44,7 +44,7 @@ func assertReadIntegerFunc(tb testing.TB, typeName string, f func() (int, error)
 
 func assertReadArrayHeader(tb testing.TB, r *resp.Reader, n int) {
 	tb.Helper()
-	assertReadIntegerFunc(tb, "array header", r.ReadArrayHeader, n)
+	assertReadNumberFunc(tb, "array header", r.ReadArrayHeader, n)
 }
 
 func assertReadBlobString(tb testing.TB, r *resp.Reader, s []byte) {
@@ -57,9 +57,9 @@ func assertReadError(tb testing.TB, r *resp.Reader, s []byte) {
 	assertReadBytesFunc(tb, "error", r.ReadSimpleError, s)
 }
 
-func assertReadInteger(tb testing.TB, r *resp.Reader, n int) {
+func assertReadNumber(tb testing.TB, r *resp.Reader, n int) {
 	tb.Helper()
-	assertReadIntegerFunc(tb, "integer", r.ReadInteger, n)
+	assertReadNumberFunc(tb, "number", r.ReadNumber, n)
 }
 
 func assertReadSimpleString(tb testing.TB, r *resp.Reader, s []byte) {
@@ -84,9 +84,9 @@ func TestReaderIntegration(t *testing.T) {
 		mustWriteLines(t, conn, "*2", "$8", "SMEMBERS", "$3", "set")
 		assertReadArrayHeader(t, r, 0)
 		mustWriteLines(t, conn, "*3", "$4", "SADD", "$3", "set", "$6", "value3")
-		assertReadInteger(t, r, 1)
+		assertReadNumber(t, r, 1)
 		mustWriteLines(t, conn, "*3", "$4", "SADD", "$3", "set", "$6", "value3")
-		assertReadInteger(t, r, 0)
+		assertReadNumber(t, r, 0)
 		mustWriteLines(t, conn, "*2", "$8", "SMEMBERS", "$3", "set")
 		assertReadArrayHeader(t, r, 1)
 		assertReadBlobString(t, r, []byte("value3"))
