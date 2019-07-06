@@ -26,27 +26,27 @@ func (rw *Writer) Reset(w io.Writer) {
 	rw.w = w
 }
 
-func (rw *Writer) writeBytes(prefix byte, s []byte) (int, error) {
+func (rw *Writer) writeBytes(prefix Type, s []byte) (int, error) {
 	rw.buf = rw.buf[:0]
-	rw.buf = append(rw.buf, prefix)
+	rw.buf = append(rw.buf, byte(prefix))
 	rw.buf = append(rw.buf, s...)
 	rw.buf = append(rw.buf, '\r', '\n')
 
 	return rw.w.Write(rw.buf)
 }
 
-func (rw *Writer) writeNumber(prefix byte, n int64) (int, error) {
+func (rw *Writer) writeNumber(prefix Type, n int64) (int, error) {
 	rw.buf = rw.buf[:0]
-	rw.buf = append(rw.buf, prefix)
+	rw.buf = append(rw.buf, byte(prefix))
 	rw.buf = strconv.AppendInt(rw.buf, n, 10)
 	rw.buf = append(rw.buf, '\r', '\n')
 
 	return rw.w.Write(rw.buf)
 }
 
-func (rw *Writer) writeString(prefix byte, s string) (int, error) {
+func (rw *Writer) writeString(prefix Type, s string) (int, error) {
 	rw.buf = rw.buf[:0]
-	rw.buf = append(rw.buf, prefix)
+	rw.buf = append(rw.buf, byte(prefix))
 	rw.buf = append(rw.buf, s...)
 	rw.buf = append(rw.buf, '\r', '\n')
 
@@ -131,20 +131,20 @@ func (rw *Writer) WriteSimpleError(s string) (int, error) {
 
 // WriteSimpleErrorBytes writes the byte slice s unvalidated as a simple error.
 func (rw *Writer) WriteSimpleErrorBytes(s []byte) (int, error) {
-	return rw.writeBytes('-', s)
+	return rw.writeBytes(TypeSimpleError, s)
 }
 
 // WriteInteger writes the integer i as the native RESP integer type.
 func (rw *Writer) WriteInteger(i int) (int, error) {
-	return rw.writeNumber(':', int64(i))
+	return rw.writeNumber(TypeInteger, int64(i))
 }
 
 // WriteSimpleString writes the string s unvalidated as a simple string.
 func (rw *Writer) WriteSimpleString(s string) (int, error) {
-	return rw.writeString('+', s)
+	return rw.writeString(TypeSimpleString, s)
 }
 
 // WriteSimpleStringBytes writes the byte slice s unvalidated as a simple string.
 func (rw *Writer) WriteSimpleStringBytes(s []byte) (int, error) {
-	return rw.writeBytes('+', s)
+	return rw.writeBytes(TypeSimpleString, s)
 }
