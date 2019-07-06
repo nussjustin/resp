@@ -3,6 +3,7 @@ package resp
 import (
 	"bufio"
 	"io"
+	"strconv"
 )
 
 // Reader wraps an io.Reader and provides methods for reading the RESP protocol.
@@ -269,4 +270,46 @@ func (rr *Reader) ReadNull() error {
 		return err
 	}
 	return rr.readEOL()
+}
+
+func (rr *Reader) ReadDouble() (float64, error) {
+	if err := rr.expect(TypeDouble); err != nil {
+		return 0, err
+	}
+
+	line, err := rr.br.ReadSlice('\n')
+	if err != nil && len(line) == 0 {
+		return 0, err
+	}
+
+	lineLen := len(line)
+
+	hasLF := len(line) > 1 && line[len(line)-1] == '\n'
+	if hasLF {
+		line = line[:len(line)-1]
+	}
+
+	hasCR := len(line) > 1 && line[len(line)-1] == '\r'
+	if hasCR {
+		line = line[:len(line)-1]
+	}
+
+	f, err := strconv.ParseFloat(string(line), 64)
+	if err != nil {
+		return 0, ErrInvalidDouble
+	}
+
+	if !hasCR && !hasLF {
+		return 0, io.EOF
+	}
+
+	if !hasCR || !hasLF {
+		return 0, ErrUnexpectedEOL
+	}
+
+	if _, err := rr.br.Discard(lineLen); err != nil && err != io.EOF {
+		return 0, err
+	}
+
+	return f, nil
 }

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"math"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -808,6 +809,129 @@ func BenchmarkReaderReadNull(b *testing.B) {
 		if err := r.ReadNull(); err != nil {
 			b.Fatalf("read failed: %s", err)
 		}
+	}
+}
+
+func TestReaderReadDouble(t *testing.T) {
+	for _, test := range []struct {
+		Name     string
+		Expected float64
+		Err      error
+		In       string
+	}{
+		{
+			Name: "empty",
+			Err:  io.EOF,
+			In:   "",
+		},
+		{
+			Name: "invalid type",
+			Err:  resp.ErrUnexpectedType,
+			In:   "A",
+		},
+		{
+			Name: "wrong type",
+			Err:  resp.ErrUnexpectedType,
+			In:   "*",
+		},
+		{
+			Name:     "negative",
+			Expected: -123.456,
+			In:       ",-123.456\r\n",
+		},
+		{
+			Name:     "zero",
+			Expected: 0.0,
+			In:       ",0.0\r\n",
+		},
+		{
+			Name:     "no point",
+			Expected: 0.0,
+			In:       ",0\r\n",
+		},
+		{
+			Name:     "small",
+			Expected: 1.0,
+			In:       ",1.0\r\n",
+		},
+		{
+			Name:     "large",
+			Expected: 1000.0001,
+			In:       ",1000.0001\r\n",
+		},
+		{
+			Name:     "positive infinity",
+			Expected: math.Inf(1),
+			In:       ",inf\r\n",
+		},
+		{
+			Name:     "negative infinity",
+			Expected: math.Inf(-1),
+			In:       ",-inf\r\n",
+		},
+		{
+			Name:     "large",
+			Expected: 1000.0001,
+			In:       ",1000.0001\r\n",
+		},
+		{
+			Name: "no \\r",
+			Err:  resp.ErrUnexpectedEOL,
+			In:   ",0\n",
+		},
+		{
+			Name: "no \\r\\n",
+			Err:  io.EOF,
+			In:   ",0",
+		},
+		{
+			Name: "no \\n",
+			Err:  resp.ErrUnexpectedEOL,
+			In:   ",0\r",
+		},
+		{
+			Name: "no number",
+			Err:  resp.ErrInvalidDouble,
+			In:   ",a\r\n",
+		},
+	} {
+		test := test
+
+		t.Run(test.Name, func(t *testing.T) {
+			r := resp.NewReader(strings.NewReader(test.In))
+
+			if got, gerr := r.ReadDouble(); gerr != test.Err {
+				t.Errorf("got error %v, expected %v", gerr, test.Err)
+			} else if got != test.Expected {
+				t.Errorf("got %f, expected %f", got, test.Expected)
+			}
+		})
+	}
+}
+
+func BenchmarkReaderReadDouble(b *testing.B) {
+	for _, s := range []string{
+		",-10000.00001\r\n",
+		",-100.001\r\n",
+		",-1.1\r\n",
+		",0\r\n",
+		",1.1\r\n",
+		",100.001\r\n",
+		",10000.00001\r\n",
+	} {
+		b.Run(s, func(b *testing.B) {
+			sr := strings.NewReader(s)
+			r := resp.NewReader(sr)
+
+			for i := 0; i < b.N; i++ {
+				sr.Reset(s)
+				r.Reset(sr)
+
+				if _, err := r.ReadDouble(); err != nil {
+					b.Fatalf("read failed: %s", err)
+				}
+			}
+		})
 	}
 }
 

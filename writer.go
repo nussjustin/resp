@@ -2,6 +2,7 @@ package resp
 
 import (
 	"io"
+	"math"
 	"strconv"
 )
 
@@ -74,7 +75,7 @@ func (rw *Writer) WriteArrayHeader(n int64) (int, error) {
 		return rw.w.Write(nilArrayHeaderBytes)
 	}
 
-	return rw.writeNumber('*', n)
+	return rw.writeNumber(TypeArray, n)
 }
 
 var nilBlobStringHeaderBytes = []byte("$-1\r\n")
@@ -91,7 +92,7 @@ func (rw *Writer) WriteBlobStringHeader(n int64) (int, error) {
 		return rw.w.Write(nilBlobStringHeaderBytes)
 	}
 
-	return rw.writeNumber('$', int64(n))
+	return rw.writeNumber(TypeBlobString, int64(n))
 }
 
 // WriteBlobString writes the string s as blob string.
@@ -126,7 +127,7 @@ func (rw *Writer) WriteBlobStringBytes(s []byte) (int, error) {
 
 // WriteSimpleError writes the string s unvalidated as a simple error.
 func (rw *Writer) WriteSimpleError(s string) (int, error) {
-	return rw.writeString('-', s)
+	return rw.writeString(TypeSimpleError, s)
 }
 
 // WriteSimpleErrorBytes writes the byte slice s unvalidated as a simple error.
@@ -152,4 +153,22 @@ func (rw *Writer) WriteSimpleStringBytes(s []byte) (int, error) {
 // WriteNull writes a NULL value.
 func (rw *Writer) WriteNull() (int, error) {
 	return rw.writeBytes(TypeNull, nil)
+}
+
+// WriteDouble writes a double value.
+func (rw *Writer) WriteDouble(f float64) (int, error) {
+	rw.buf = rw.buf[:0]
+	rw.buf = append(rw.buf, byte(TypeDouble))
+
+	switch {
+	case math.IsInf(f, 1):
+		rw.buf = append(rw.buf, "inf\r\n"...)
+	case math.IsInf(f, -1):
+		rw.buf = append(rw.buf, "-inf\r\n"...)
+	default:
+		rw.buf = strconv.AppendFloat(rw.buf, f, 'f', -1, 64)
+		rw.buf = append(rw.buf, '\r', '\n')
+	}
+
+	return rw.w.Write(rw.buf)
 }

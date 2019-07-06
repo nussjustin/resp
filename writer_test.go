@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -366,7 +367,7 @@ func BenchmarkWriterWriteBlobStringHeader(b *testing.B) {
 }
 
 func TestWriterWriteSimpleError(t *testing.T) {
-	for _, test := range prefixedSimpleWriteCases(resp.TypeSimpleString) {
+	for _, test := range prefixedSimpleWriteCases(resp.TypeSimpleError) {
 		test.run(t,
 			(*resp.Writer).WriteSimpleError,
 			(*resp.Writer).WriteSimpleErrorBytes)
@@ -474,5 +475,81 @@ func BenchmarkWriterWriteNull(b *testing.B) {
 		if _, err := w.WriteNull(); err != nil {
 			b.Fatalf("write failed: %s", err)
 		}
+	}
+}
+
+func TestWriterWriteDouble(t *testing.T) {
+	for _, test := range []struct {
+		Name     string
+		Expected string
+		F        float64
+	}{
+		{
+			Name:     "no point",
+			Expected: ",123\r\n",
+			F:        123.0,
+		},
+		{
+			Name:     "no point negative",
+			Expected: ",-123\r\n",
+			F:        -123.0,
+		},
+		{
+			Name:     "small",
+			Expected: ",1.23\r\n",
+			F:        1.23,
+		},
+		{
+			Name:     "small negative",
+			Expected: ",-1.23\r\n",
+			F:        -1.23,
+		},
+		{
+			Name:     "large",
+			Expected: ",6379.9736\r\n",
+			F:        6379.9736,
+		},
+		{
+			Name:     "large negative",
+			Expected: ",-6379.9736\r\n",
+			F:        -6379.9736,
+		},
+		{
+			Name: "positive infinity",
+			Expected: ",inf\r\n",
+			F: math.Inf(1),
+		},
+		{
+			Name: "negative infinity",
+			Expected: ",-inf\r\n",
+			F: math.Inf(-1),
+		},
+	} {
+		test := test
+
+		t.Run(test.Name, func(t *testing.T) {
+			var buf bytes.Buffer
+			w := resp.NewWriter(&buf)
+
+			if _, err := w.WriteDouble(test.F); err != nil {
+				t.Errorf("got error %q", err)
+			} else if got := buf.String(); got != test.Expected {
+				t.Errorf("got %q, expected %q", got, test.Expected)
+			}
+		})
+	}
+}
+
+func BenchmarkWriterWriteDouble(b *testing.B) {
+	for _, f := range []float64{-1, 0, 100} {
+		b.Run(strconv.FormatFloat(f, 'f', -1, 64), func(b *testing.B) {
+			w := resp.NewWriter(ioutil.Discard)
+
+			for i := 0; i < b.N; i++ {
+				if _, err := w.WriteDouble(f); err != nil {
+					b.Fatalf("write failed: %s", err)
+				}
+			}
+		})
 	}
 }

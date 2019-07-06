@@ -32,6 +32,15 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 			tb.Fatalf("failed to write blob string %q: %s", s, err)
 		}
 	},
+	resp.TypeDouble: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
+		f, err := rw.ReadDouble()
+		if err != nil {
+			tb.Fatalf("failed to read double: %s", err)
+		}
+		if _, err := rw.WriteDouble(f); err != nil {
+			tb.Fatalf("failed to write double %f: %s", f, err)
+		}
+	},
 	resp.TypeSimpleError: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
 		s, err := rw.ReadSimpleError(buf)
 		if err != nil {
