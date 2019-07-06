@@ -486,7 +486,7 @@ func BenchmarkReaderReadBlobStringHeader(b *testing.B) {
 	}
 }
 
-func TestReaderReadError(t *testing.T) {
+func TestReaderReadSimpleError(t *testing.T) {
 	for _, test := range []struct {
 		Name     string
 		Expected []byte
@@ -552,7 +552,7 @@ func TestReaderReadError(t *testing.T) {
 	}
 }
 
-func BenchmarkReaderReadError(b *testing.B) {
+func BenchmarkReaderReadSimpleError(b *testing.B) {
 	for _, s := range []string{
 		"-\r\n",
 		"-ERR\r\n",

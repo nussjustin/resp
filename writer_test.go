@@ -365,7 +365,7 @@ func BenchmarkWriterWriteBlobStringHeader(b *testing.B) {
 	}
 }
 
-func TestWriterWriteError(t *testing.T) {
+func TestWriterWriteSimpleError(t *testing.T) {
 	for _, test := range prefixedSimpleWriteCases("-") {
 		test.run(t,
 			(*resp.Writer).WriteSimpleError,
@@ -373,7 +373,7 @@ func TestWriterWriteError(t *testing.T) {
 	}
 }
 
-func BenchmarkWriterWriteError(b *testing.B) {
+func BenchmarkWriterWriteSimpleError(b *testing.B) {
 	for _, n := range []int{0, 1, 10, 100, 1000, 10000} {
 		s := strings.Repeat("X", n)
 
