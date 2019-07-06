@@ -743,6 +743,74 @@ func BenchmarkReaderReadSimpleString(b *testing.B) {
 	}
 }
 
+func TestReaderReadNull(t *testing.T) {
+	for _, test := range []struct {
+		Name     string
+		Err      error
+		In string
+	}{
+		{
+			Name: "empty",
+			Err:  io.EOF,
+		},
+		{
+			Name: "invalid type",
+			Err:  resp.ErrUnexpectedType,
+			In:   "A",
+		},
+		{
+			Name: "wrong type",
+			Err:  resp.ErrUnexpectedType,
+			In:   "*",
+		},
+		{
+			Name:     "normal",
+			In:       "_\r\n",
+		},
+		{
+			Name: "no \\r",
+			Err:  resp.ErrUnexpectedEOL,
+			In:   "_\n",
+		},
+		{
+			Name: "no \\r\\n",
+			Err:  resp.ErrUnexpectedEOL,
+			In:   "_",
+		},
+		{
+			Name: "no \\n",
+			Err:  resp.ErrUnexpectedEOL,
+			In:   "_\r",
+		},
+	} {
+		test := test
+
+		t.Run(test.Name, func(t *testing.T) {
+			r := resp.NewReader(strings.NewReader(test.In))
+
+			if err := r.ReadNull(); err != test.Err {
+				t.Errorf("got error %v, expected %v", err, test.Err)
+			}
+		})
+	}
+}
+
+func BenchmarkReaderReadNull(b *testing.B) {
+	const in = "_\r\n"
+
+	sr := strings.NewReader(in)
+	r := resp.NewReader(sr)
+
+	for i := 0; i < b.N; i++ {
+		sr.Reset(in)
+		r.Reset(sr)
+
+		if err := r.ReadNull(); err != nil {
+			b.Fatalf("read failed: %s", err)
+		}
+	}
+}
+
 func TestReaderReadMixed(t *testing.T) {
 	const data = "+OK\r\n-ERR something went wrong\r\n$5\r\nhello\r\n*3\r\n$5\r\nworld\r\n:5\r\n*-1\r\n"
 

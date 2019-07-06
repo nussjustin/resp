@@ -50,6 +50,14 @@ var copyFuncs = [255]func(testing.TB, *resp.ReadWriter, []byte){
 			tb.Fatalf("failed to write number size %d: %s", n, err)
 		}
 	},
+	resp.TypeNull: func(tb testing.TB, rw *resp.ReadWriter, _ []byte) {
+		if err := rw.ReadNull(); err != nil {
+			tb.Fatalf("failed to read NULL: %s", err)
+		}
+		if _, err := rw.WriteNull(); err != nil {
+			tb.Fatalf("failed to write NULL: %s", err)
+		}
+	},
 	resp.TypeSimpleString: func(tb testing.TB, rw *resp.ReadWriter, buf []byte) {
 		s, err := rw.ReadSimpleString(buf)
 		if err != nil {

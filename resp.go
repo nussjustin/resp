@@ -35,6 +35,8 @@ const (
 	TypeBlobString Type = '$'
 	// TypeNumber signifies a number.
 	TypeNumber Type = ':'
+	// TypeNull signifies a NULL value.
+	TypeNull Type = '_'
 	// TypeError signifies an error string.
 	TypeSimpleError Type = '-'
 	// TypeSimpleString signifies a simple string.
@@ -46,7 +48,8 @@ var _ fmt.Stringer = TypeInvalid
 var types = [255]Type{
 	TypeArray:        TypeArray,
 	TypeBlobString:   TypeBlobString,
-	TypeNumber:      TypeNumber,
+	TypeNumber:       TypeNumber,
+	TypeNull:         TypeNull,
 	TypeSimpleError:  TypeSimpleError,
 	TypeSimpleString: TypeSimpleString,
 }

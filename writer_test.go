@@ -85,26 +85,26 @@ type simpleWriteCase struct {
 	In       []byte
 }
 
-func prefixedSimpleWriteCases(prefix string) []simpleWriteCase {
+func prefixedSimpleWriteCases(prefix resp.Type) []simpleWriteCase {
 	return []simpleWriteCase{
 		{
 			Name:     "empty",
-			Expected: prefix + "\r\n",
+			Expected: string(prefix) + "\r\n",
 			In:       []byte{},
 		},
 		{
 			Name:     "nil",
-			Expected: prefix + "\r\n",
+			Expected: string(prefix) + "\r\n",
 			In:       nil,
 		},
 		{
 			Name:     "small",
-			Expected: prefix + "YO hello world\r\n",
+			Expected: string(prefix) + "YO hello world\r\n",
 			In:       []byte("YO hello world"),
 		},
 		{
 			Name:     "invalid",
-			Expected: prefix + "YO hello\r\nworld\r\n",
+			Expected: string(prefix) + "YO hello\r\nworld\r\n",
 			In:       []byte("YO hello\r\nworld"),
 		},
 	}
@@ -366,7 +366,7 @@ func BenchmarkWriterWriteBlobStringHeader(b *testing.B) {
 }
 
 func TestWriterWriteSimpleError(t *testing.T) {
-	for _, test := range prefixedSimpleWriteCases("-") {
+	for _, test := range prefixedSimpleWriteCases(resp.TypeSimpleString) {
 		test.run(t,
 			(*resp.Writer).WriteSimpleError,
 			(*resp.Writer).WriteSimpleErrorBytes)
@@ -439,7 +439,7 @@ func BenchmarkWriterWriteNumber(b *testing.B) {
 }
 
 func TestWriterWriteSimpleString(t *testing.T) {
-	for _, test := range prefixedSimpleWriteCases("+") {
+	for _, test := range prefixedSimpleWriteCases(resp.TypeSimpleString) {
 		test.run(t,
 			(*resp.Writer).WriteSimpleString,
 			(*resp.Writer).WriteSimpleStringBytes)
@@ -453,5 +453,26 @@ func BenchmarkWriterWriteSimpleString(b *testing.B) {
 		b.Run(strconv.Itoa(n), func(b *testing.B) {
 			benchmarkSimpleWrite(b, s, (*resp.Writer).WriteSimpleString)
 		})
+	}
+}
+
+func TestWriterWriteNull(t *testing.T) {
+	var buf bytes.Buffer
+	w := resp.NewWriter(&buf)
+
+	if _, err := w.WriteNull(); err != nil {
+		t.Errorf("write failed: %s", err)
+	} else if got := buf.String(); got != "_\r\n" {
+		t.Errorf("got %q, expected %q", got, "_\r\n")
+	}
+}
+
+func BenchmarkWriterWriteNull(b *testing.B) {
+	w := resp.NewWriter(ioutil.Discard)
+
+	for i := 0; i < b.N; i++ {
+		if _, err := w.WriteNull(); err != nil {
+			b.Fatalf("write failed: %s", err)
+		}
 	}
 }

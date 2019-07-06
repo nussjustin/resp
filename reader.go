@@ -65,6 +65,21 @@ func (rr *Reader) expect(t Type) error {
 	return err
 }
 
+func (rr *Reader) readEOL() error {
+	b, err := rr.br.Peek(2)
+	if err != nil {
+		if err == io.EOF {
+			return ErrUnexpectedEOL
+		}
+		return err
+	}
+	if len(b) != 2 || b[0] != '\r' || b[1] != '\n' {
+		return ErrUnexpectedEOL
+	}
+	_, err = rr.br.Discard(len(b))
+	return err
+}
+
 func (rr *Reader) readNumberLine() (int64, error) {
 	var n int64
 	var neg bool
@@ -244,4 +259,14 @@ func (rr *Reader) ReadSimpleString(dst []byte) ([]byte, error) {
 		return nil, err
 	}
 	return rr.readLine(dst)
+}
+
+// ReadNull reads a NULL value.
+//
+// If the next type in the response is not a NULL value, ErrUnexpectedType is returned.
+func (rr *Reader) ReadNull() error {
+	if err := rr.expect(TypeNull); err != nil {
+		return err
+	}
+	return rr.readEOL()
 }

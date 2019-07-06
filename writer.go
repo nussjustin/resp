@@ -148,3 +148,8 @@ func (rw *Writer) WriteSimpleString(s string) (int, error) {
 func (rw *Writer) WriteSimpleStringBytes(s []byte) (int, error) {
 	return rw.writeBytes(TypeSimpleString, s)
 }
+
+// WriteNull writes a NULL value.
+func (rw *Writer) WriteNull() (int, error) {
+	return rw.writeBytes(TypeNull, nil)
+}
