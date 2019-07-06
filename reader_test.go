@@ -191,9 +191,9 @@ func TestReaderReadArrayHeader(t *testing.T) {
 			In:   "*-2\r\n",
 		},
 		{
-			Name:     "null",
-			Expected: -1,
-			In:       "*-1\r\n",
+			Name: "null",
+			Err:  resp.ErrInvalidArrayLength,
+			In:   "*-1\r\n",
 		},
 		{
 			Name:     "zero",
@@ -251,7 +251,6 @@ func TestReaderReadArrayHeader(t *testing.T) {
 
 func BenchmarkReaderReadArrayHeader(b *testing.B) {
 	for _, s := range []string{
-		"*-1\r\n",
 		"*0\r\n",
 		"*1\r\n",
 		"*100\r\n",
@@ -286,9 +285,9 @@ func TestReaderReadBlobString(t *testing.T) {
 			In:   "*",
 		},
 		{
-			Name:     "null",
-			Expected: nil,
-			In:       "$-1\r\n",
+			Name: "null",
+			Err:  resp.ErrInvalidBlobStringLength,
+			In:   "$-1\r\n",
 		},
 		{
 			Name: "negative",
@@ -370,10 +369,6 @@ func BenchmarkReaderReadBlobString(b *testing.B) {
 		In   string
 	}{
 		{
-			Name: "null",
-			In:   "$-1\r\n",
-		},
-		{
 			Name: "empty",
 			In:   "$0\r\n\r\n",
 		},
@@ -420,9 +415,9 @@ func TestReaderReadBlobStringHeader(t *testing.T) {
 			In:   "$-2\r\n",
 		},
 		{
-			Name:     "null",
-			Expected: -1,
-			In:       "$-1\r\n",
+			Name: "null",
+			Err:  resp.ErrInvalidBlobStringLength,
+			In:   "$-1\r\n",
 		},
 		{
 			Name:     "zero",
@@ -480,7 +475,6 @@ func TestReaderReadBlobStringHeader(t *testing.T) {
 
 func BenchmarkReaderReadBlobStringHeader(b *testing.B) {
 	for _, s := range []string{
-		"$-1\r\n",
 		"$0\r\n",
 		"$1\r\n",
 		"$100\r\n",
@@ -778,7 +772,7 @@ func TestReaderReadMixed(t *testing.T) {
 		t.Fatalf("failed to read number: %s", err)
 	}
 
-	if n, err := r.ReadArrayHeader(); err != nil || n != -1 {
+	if _, err := r.ReadArrayHeader(); err != resp.ErrInvalidArrayLength {
 		t.Fatalf("failed to read array header: %s", err)
 	}
 }

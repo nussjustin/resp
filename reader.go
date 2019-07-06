@@ -182,7 +182,7 @@ func (rr *Reader) ReadArrayHeader() (int64, error) {
 		return 0, err
 	}
 	n, err := rr.readNumberLine()
-	if n < -1 || err == ErrInvalidNumber {
+	if n < 0 || err == ErrInvalidNumber {
 		n, err = 0, ErrInvalidArrayLength
 	}
 	return n, err
@@ -196,7 +196,7 @@ func (rr *Reader) ReadBlobStringHeader() (int64, error) {
 		return 0, err
 	}
 	n, err := rr.readNumberLine()
-	if n < -1 || err == ErrInvalidNumber {
+	if n < 0 || err == ErrInvalidNumber {
 		n, err = 0, ErrInvalidBlobStringLength
 	}
 	return n, err
@@ -210,7 +210,7 @@ func (rr *Reader) ReadBlobStringHeader() (int64, error) {
 // If the next type in the response is not a blob string, ErrUnexpectedType is returned.
 func (rr *Reader) ReadBlobString(dst []byte) ([]byte, error) {
 	n, err := rr.ReadBlobStringHeader()
-	if n == -1 || err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return rr.readLineN(dst, int(n))
